@@ -5,64 +5,49 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Ambient Glow behind mic -->
-    <path
-        android:fillColor="#2600F0FF"
-        android:pathData="M54,48m-20,0a20,20 0 1,0 40,0a20,20 0 1,0 -40,0" />
-
-    <!-- Left Sound Waves -->
-    <path
-        android:fillColor="#7C4DFF"
-        android:pathData="M31,44a2.5,2.5 0 0,1 2.5,-2.5h0a2.5,2.5 0 0,1 2.5,2.5v10a2.5,2.5 0 0,1 -2.5,2.5h0a2.5,2.5 0 0,1 -2.5,-2.5z" />
-    <path
-        android:fillColor="#00E5FF"
-        android:pathData="M38,39a2.5,2.5 0 0,1 2.5,-2.5h0a2.5,2.5 0 0,1 2.5,2.5v20a2.5,2.5 0 0,1 -2.5,2.5h0a2.5,2.5 0 0,1 -2.5,-2.5z" />
-
-    <!-- Right Sound Waves -->
-    <path
-        android:fillColor="#00E5FF"
-        android:pathData="M65,39a2.5,2.5 0 0,1 2.5,-2.5h0a2.5,2.5 0 0,1 2.5,2.5v20a2.5,2.5 0 0,1 -2.5,2.5h0a2.5,2.5 0 0,1 -2.5,-2.5z" />
-    <path
-        android:fillColor="#7C4DFF"
-        android:pathData="M72,44a2.5,2.5 0 0,1 2.5,-2.5h0a2.5,2.5 0 0,1 2.5,2.5v10a2.5,2.5 0 0,1 -2.5,2.5h0a2.5,2.5 0 0,1 -2.5,-2.5z" />
-
-    <!-- Mic Capsule (Top Grille) -->
-    <path
-        android:fillColor="#00F0FF"
-        android:pathData="M48,34 C48,30.686 50.686,28 54,28 C57.314,28 60,30.686 60,34 L60,47 C60,50.314 57.314,53 54,53 C50.686,53 48,50.314 48,47 Z" />
-
-    <!-- Mic Capsule Inner Highlight -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M52,32 C52,30.895 52.895,30 54,30 C55.105,30 56,30.895 56,32 L56,40 C56,41.105 55.105,42 54,42 C52.895,42 52,41.105 52,40 Z" />
-
-    <!-- Mic U-Frame Cradle -->
+    <!-- Center Minimalist Mic Capsule -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="3.2"
+        android:strokeWidth="2.8"
         android:strokeLineCap="round"
-        android:pathData="M44,45 C44,51.5 48.5,57 54,57 C59.5,57 64,51.5 64,45" />
+        android:strokeLineJoin="round"
+        android:pathData="M48,34 C48,30.7 50.7,28 54,28 C57.3,28 60,30.7 60,34 L60,47 C60,50.3 57.3,53 54,53 C50.7,53 48,50.3 48,47 Z" />
 
-    <!-- Mic Stand Stem -->
+    <!-- Mic Cradle (U-Shape) -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="3.2"
+        android:strokeWidth="2.8"
         android:strokeLineCap="round"
-        android:pathData="M54,57 L54,67" />
+        android:pathData="M43,45 C43,52 48,58 54,58 C60,58 65,52 65,45" />
 
-    <!-- Mic Stand Base -->
+    <!-- Stem & Base -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="3.2"
+        android:strokeWidth="2.8"
         android:strokeLineCap="round"
-        android:pathData="M47,67 L61,67" />
-
-    <!-- Accent Sparkle Star (Top Right) -->
+        android:pathData="M54,58 L54,69" />
     <path
-        android:fillColor="#FFD600"
-        android:pathData="M68,26 L69.2,29.8 L73,31 L69.2,32.2 L68,36 L66.8,32.2 L63,31 L66.8,29.8 Z" />
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:pathData="M46,69 L62,69" />
+
+    <!-- Subtle Minimalist Wave Bars (Left & Right) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#737373"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M35,43 L35,51" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#737373"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M73,43 L73,51" />
 
 </vector>
