@@ -1,4 +1,4 @@
-package com.karalog.app.data.local
+﻿package com.karalog.app.data.local
 
 import android.content.Context
 import androidx.room.Database
@@ -46,7 +46,7 @@ abstract class KaraLogDatabase : RoomDatabase() {
                                 SongEntity(title = "\u30a2\u30a4\u30c9\u30eb", artist = "YOASOBI", duration = "3:33", requestNumber = "7820-45", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
                                 SongEntity(title = "\u5929\u4f53\u89b3\u6e2c", artist = "BUMP OF CHICKEN", duration = "4:45", requestNumber = "1203-44", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
                                 SongEntity(title = "\u4e38\u30ce\u5185\u30b5\u30c7\u30a3\u30b9\u30c6\u30a3\u30c3\u30af", artist = "\u690e\u540d\u6797\u6a8e", duration = "3:55", requestNumber = "3194-02", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
-                                SongEntity(title = "Subtitle", artist = "Official\u9a鬮ｭ\u7537dism", duration = "5:05", requestNumber = "8902-33", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
+                                SongEntity(title = "Subtitle", artist = "Official HIGEDANdism", duration = "5:05", requestNumber = "8902-33", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
                                 SongEntity(title = "\u6c34\u5e73\u7dda", artist = "back number", duration = "4:47", requestNumber = "6102-18", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0)
                             )
                             INSTANCE?.songDao()?.insertSongs(initialSongs)
