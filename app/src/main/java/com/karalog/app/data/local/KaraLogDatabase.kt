@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 @Database(
     entities = [SongEntity::class, SingingRecordEntity::class],
-    version = 2,
+    version = 4,
     exportSchema = false
 )
 abstract class KaraLogDatabase : RoomDatabase() {
@@ -39,17 +39,24 @@ abstract class KaraLogDatabase : RoomDatabase() {
                         super.onCreate(db)
                         CoroutineScope(Dispatchers.IO).launch {
                             val initialSongs = listOf(
-                                SongEntity(title = "\u6b8b\u9177\u306a\u5929\u4f7f\u306e\u30c6\u30fc\u30bc", artist = "\u9ad8\u6a4b\u6d0b\u5b50", duration = "4:05", requestNumber = "2891-01", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
-                                SongEntity(title = "\u30de\u30ea\u30fc\u30b4\u30fc\u30eb\u30c9", artist = "\u3042\u3044\u307f\u3087\u3093", duration = "5:06", requestNumber = "4321-89", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
-                                SongEntity(title = "\u30c9\u30e9\u30a4\u30d5\u30e9\u30ef\u30fc", artist = "\u512a\u91cc", duration = "4:46", requestNumber = "6541-20", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
-                                SongEntity(title = "\u602a\u7363\u306e\u82b1\u5504", artist = "Vaundy", duration = "3:44", requestNumber = "5092-11", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
-                                SongEntity(title = "\u30a2\u30a4\u30c9\u30eb", artist = "YOASOBI", duration = "3:33", requestNumber = "7820-45", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
-                                SongEntity(title = "\u5929\u4f53\u89b3\u6e2c", artist = "BUMP OF CHICKEN", duration = "4:45", requestNumber = "1203-44", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
-                                SongEntity(title = "\u4e38\u30ce\u5185\u30b5\u30c7\u30a3\u30b9\u30c6\u30a3\u30c3\u30af", artist = "\u690e\u540d\u6797\u6a8e", duration = "3:55", requestNumber = "3194-02", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
-                                SongEntity(title = "Subtitle", artist = "Official HIGEDANdism", duration = "5:05", requestNumber = "8902-33", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
-                                SongEntity(title = "\u6c34\u5e73\u7dda", artist = "back number", duration = "4:47", requestNumber = "6102-18", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0)
+                                SongEntity(title = "How Many Boogie", artist = "SKRYU, WAZ", duration = "3:10", requestNumber = "4901-22", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
+                                SongEntity(title = "みどり", artist = "CHEHON", duration = "4:15", requestNumber = "1284-90", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
+                                SongEntity(title = "脳内麻薬", artist = "RAY", duration = "3:42", requestNumber = "3029-14", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
+                                SongEntity(title = "聞いてま。", artist = "初音ミク", duration = "3:30", requestNumber = "8821-05", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0),
+                                SongEntity(title = "残酷な天使のテーゼ", artist = "高橋洋子", duration = "4:05", requestNumber = "2891-01", isDamAvailable = true, isJoysoundAvailable = true, defaultKey = 0)
                             )
                             INSTANCE?.songDao()?.insertSongs(initialSongs)
+
+                            // Initial ranking record from sketch
+                            val rankingRecord = SingingRecordEntity(
+                                songId = 4,
+                                date = 1719097200000L, // 2024.6.23
+                                score = 98.1,
+                                keyChange = 0,
+                                machineType = "精密採点AI",
+                                memo = ""
+                            )
+                            INSTANCE?.singingRecordDao()?.insertRecord(rankingRecord)
                         }
                     }
                 })

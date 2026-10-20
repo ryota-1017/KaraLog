@@ -1,4 +1,4 @@
-package com.karalog.app.ui.components
+﻿package com.karalog.app.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -37,8 +37,8 @@ fun BottomNavBar(
         modifier = modifier
             .fillMaxWidth()
             .background(BgPrimary)
+            .navigationBarsPadding()
     ) {
-        // 1px top border
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -49,7 +49,7 @@ fun BottomNavBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp),
+                .height(48.dp),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {

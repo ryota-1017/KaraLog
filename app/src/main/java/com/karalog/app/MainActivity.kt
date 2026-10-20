@@ -42,12 +42,9 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     topBar = {
                         HeaderBar(
-                            onAddClick = {
-                                viewModel.quickAddAndGetSong("譁ｰ隕乗･ｽ譖ｲ " + (songsWithStats.size + 1)) { song ->
-                                    activeSingingSong = song
-                                }
-                            },
-                            onToggleLoading = { /* skeleton toggle */ }
+                            onFilterClick = {
+                                currentTab = BottomTab.SETTINGS
+                            }
                         )
                     },
                     bottomBar = {
@@ -56,6 +53,7 @@ class MainActivity : ComponentActivity() {
                             onTabSelected = { currentTab = it }
                         )
                     },
+                    contentWindowInsets = WindowInsets(0, 0, 0, 0),
                     containerColor = BgPrimary
                 ) { innerPadding ->
                     Box(
@@ -66,8 +64,8 @@ class MainActivity : ComponentActivity() {
                     ) {
                         when (currentTab) {
                             BottomTab.HOME -> HomeScreen(
-                                keptSongs = songsWithStats.filter { it.isKept },
-                                allSongs = songsWithStats,
+                                recommendedSongs = songsWithStats,
+                                rankingRecords = recordsWithSong,
                                 onSongClick = { song ->
                                     activeSingingSong = song
                                     currentKeyOffset = song.defaultKey
@@ -80,12 +78,20 @@ class MainActivity : ComponentActivity() {
                                     activeSingingSong = song
                                     currentKeyOffset = song.defaultKey
                                     currentTab = BottomTab.SING
+                                },
+                                onSearchClick = { currentTab = BottomTab.SEARCH },
+                                onHistoryClick = { currentTab = BottomTab.HISTORY },
+                                onAddClick = {
+                                    viewModel.quickAddAndGetSong("譁ｰ隕乗峇 " + (songsWithStats.size + 1)) { song ->
+                                        activeSingingSong = song
+                                        currentTab = BottomTab.SING
+                                    }
                                 }
                             )
 
                             BottomTab.SEARCH -> HomeScreen(
-                                keptSongs = emptyList(),
-                                allSongs = songsWithStats,
+                                recommendedSongs = songsWithStats,
+                                rankingRecords = emptyList(),
                                 onSongClick = { song ->
                                     activeSingingSong = song
                                     currentKeyOffset = song.defaultKey
@@ -98,6 +104,14 @@ class MainActivity : ComponentActivity() {
                                     activeSingingSong = song
                                     currentKeyOffset = song.defaultKey
                                     currentTab = BottomTab.SING
+                                },
+                                onSearchClick = { currentTab = BottomTab.SEARCH },
+                                onHistoryClick = { currentTab = BottomTab.HISTORY },
+                                onAddClick = {
+                                    viewModel.quickAddAndGetSong("譁ｰ隕乗峇 " + (songsWithStats.size + 1)) { song ->
+                                        activeSingingSong = song
+                                        currentTab = BottomTab.SING
+                                    }
                                 }
                             )
 
@@ -130,11 +144,12 @@ class MainActivity : ComponentActivity() {
                                         song = song,
                                         score = score,
                                         keyChange = currentKeyOffset,
-                                        machineType = currentMachine, memo = ""
+                                        machineType = currentMachine,
+                                        memo = ""
                                     )
                                     showScoreInputSheet = false
                                     activeSingingSong = null
-                                    currentTab = BottomTab.HISTORY
+                                    currentTab = BottomTab.HOME
                                 },
                                 onDismiss = { showScoreInputSheet = false }
                             )
@@ -145,4 +160,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
