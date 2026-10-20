@@ -1,4 +1,4 @@
-package com.karalog.app.ui.theme
+﻿package com.karalog.app.ui.theme
 
 import android.app.Activity
 import androidx.compose.material3.*
@@ -9,38 +9,38 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-val MidnightBlack = Color(0xFF0B0F19)
-val SurfaceDark = Color(0xFF131A2B)
-val SurfaceVariantDark = Color(0xFF1C263D)
-val OutlineDark = Color(0xFF2E3D5C)
+// Strict Monotone Palette
+val BgPrimary = Color(0xFFFFFFFF)
+val BgSecondary = Color(0xFFFAFAFA)
+val BorderLight = Color(0xFFE5E5E5)
+val TextMain = Color(0xFF171717)
+val TextSub = Color(0xFF737373)
+val IconInactive = Color(0xFF8E8E93)
+val IconActive = Color(0xFF171717)
 
-val NeonCyan = Color(0xFF00E5FF)
-val NeonCyanDark = Color(0xFF00B0FF)
-val VibrantBlue = Color(0xFF2979FF)
-val VibrantPurple = Color(0xFF7C4DFF)
-val SuccessGreen = Color(0xFF00E676)
-val AmberStar = Color(0xFFFFD600)
-val CoralRed = Color(0xFFFF5252)
+// Backward compatibility mappings
+val MidnightBlack = BgPrimary
+val SurfaceDark = BgPrimary
+val SurfaceVariantDark = BgSecondary
+val OutlineDark = BorderLight
+val NeonCyan = TextMain
+val NeonCyanDark = TextMain
+val VibrantBlue = TextMain
+val VibrantPurple = TextMain
+val SuccessGreen = TextMain
+val AmberStar = TextMain
+val CoralRed = TextSub
 
-private val DarkColorScheme = darkColorScheme(
-    primary = NeonCyan,
-    onPrimary = MidnightBlack,
-    primaryContainer = VibrantBlue.copy(alpha = 0.25f),
-    onPrimaryContainer = NeonCyan,
-    secondary = VibrantPurple,
-    onSecondary = Color.White,
-    secondaryContainer = VibrantPurple.copy(alpha = 0.2f),
-    onSecondaryContainer = Color(0xFFD1C4E9),
-    tertiary = AmberStar,
-    background = MidnightBlack,
-    onBackground = Color(0xFFF0F4F8),
-    surface = SurfaceDark,
-    onSurface = Color(0xFFF0F4F8),
-    surfaceVariant = SurfaceVariantDark,
-    onSurfaceVariant = Color(0xFF90A4AE),
-    outline = OutlineDark,
-    outlineVariant = Color(0xFF263238),
-    error = CoralRed
+private val LightColorScheme = lightColorScheme(
+    primary = TextMain,
+    onPrimary = BgPrimary,
+    background = BgPrimary,
+    onBackground = TextMain,
+    surface = BgPrimary,
+    onSurface = TextMain,
+    surfaceVariant = BgSecondary,
+    onSurfaceVariant = TextSub,
+    outline = BorderLight
 )
 
 @Composable
@@ -49,11 +49,16 @@ fun KaraLogTheme(content: @Composable () -> Unit) {
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = MidnightBlack.toArgb()
-            window.navigationBarColor = MidnightBlack.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
-            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = false
+            window.statusBarColor = BgPrimary.toArgb()
+            window.navigationBarColor = BgPrimary.toArgb()
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            insetsController.isAppearanceLightStatusBars = true
+            insetsController.isAppearanceLightNavigationBars = true
         }
     }
-    MaterialTheme(colorScheme = DarkColorScheme, typography = Typography(), content = content)
+
+    MaterialTheme(
+        colorScheme = LightColorScheme,
+        content = content
+    )
 }

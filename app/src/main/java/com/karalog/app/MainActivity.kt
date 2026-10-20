@@ -1,11 +1,10 @@
-package com.karalog.app
+﻿package com.karalog.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -15,11 +14,9 @@ import com.karalog.app.data.local.entity.SongEntity
 import com.karalog.app.ui.components.*
 import com.karalog.app.ui.screens.history.HistoryScreen
 import com.karalog.app.ui.screens.home.HomeScreen
-import com.karalog.app.ui.screens.recommend.RecommendationsScreen
 import com.karalog.app.ui.screens.settings.SettingsScreen
-import com.karalog.app.ui.screens.start.StartScreen
+import com.karalog.app.ui.theme.BgPrimary
 import com.karalog.app.ui.theme.KaraLogTheme
-import com.karalog.app.ui.theme.MidnightBlack
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,157 +32,117 @@ class MainActivity : ComponentActivity() {
                 val songsWithStats by viewModel.songsWithStats.collectAsState()
                 val keptSongs by viewModel.keptSongs.collectAsState()
                 val recordsWithSong by viewModel.recordsWithSong.collectAsState()
-                val sessionRecords by viewModel.sessionRecords.collectAsState()
 
-                var isSessionActive by remember { mutableStateOf(false) }
-                var currentMachine by remember { mutableStateOf("DAM (\u7cbe\u5bc6\u63a1\u70b9Ai)") }
-                var currentTab by remember { mutableStateOf(NavTab.HOME) }
-
+                var currentTab by remember { mutableStateOf(BottomTab.HOME) }
                 var activeSingingSong by remember { mutableStateOf<SongEntity?>(null) }
                 var showScoreInputSheet by remember { mutableStateOf(false) }
-                var lastResultData by remember { mutableStateOf<Triple<String, Double, Double?>?>(null) }
-                var showSessionSummaryDialog by remember { mutableStateOf(false) }
+                var currentMachine by remember { mutableStateOf("DAM") }
+                var currentKeyOffset by remember { mutableStateOf(0) }
 
-                if (!isSessionActive) {
-                    StartScreen(
-                        onStartSession = { machine ->
-                            currentMachine = machine
-                            viewModel.resetSession()
-                            isSessionActive = true
-                            currentTab = NavTab.HOME
-                        }
-                    )
-                } else if (activeSingingSong != null) {
-                    NowSingingView(
-                        song = activeSingingSong!!,
-                        currentMachine = currentMachine,
-                        onCancel = { activeSingingSong = null },
-                        onInputScore = { showScoreInputSheet = true },
-                        onKeyChange = { newKey ->
-                            activeSingingSong = activeSingingSong!!.copy(defaultKey = newKey)
-                            viewModel.updateSongKey(activeSingingSong!!.id, newKey)
-                        }
-                    )
-                } else {
-                    Scaffold(
-                        topBar = { HeaderBar(currentMachine = currentMachine) },
-                        bottomBar = {
-                            BottomNavBar(
-                                selectedTab = currentTab,
-                                onTabSelected = { tab ->
-                                    if (tab == NavTab.END_SESSION) {
-                                        showSessionSummaryDialog = true
-                                    } else {
-                                        currentTab = tab
-                                    }
+                Scaffold(
+                    topBar = {
+                        HeaderBar(
+                            onAddClick = {
+                                viewModel.quickAddAndGetSong("譁ｰ隕乗･ｽ譖ｲ " + (songsWithStats.size + 1)) { song ->
+                                    activeSingingSong = song
+                                }
+                            },
+                            onToggleLoading = { /* skeleton toggle */ }
+                        )
+                    },
+                    bottomBar = {
+                        BottomNavBar(
+                            currentTab = currentTab,
+                            onTabSelected = { currentTab = it }
+                        )
+                    },
+                    containerColor = BgPrimary
+                ) { innerPadding ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                            .background(BgPrimary)
+                    ) {
+                        when (currentTab) {
+                            BottomTab.HOME -> HomeScreen(
+                                keptSongs = songsWithStats.filter { it.isKept },
+                                allSongs = songsWithStats,
+                                onSongClick = { song ->
+                                    activeSingingSong = song
+                                    currentKeyOffset = song.defaultKey
+                                    currentTab = BottomTab.SING
+                                },
+                                onKeepToggle = { song ->
+                                    viewModel.toggleKept(song.id, !song.isKept)
+                                },
+                                onSingClick = { song ->
+                                    activeSingingSong = song
+                                    currentKeyOffset = song.defaultKey
+                                    currentTab = BottomTab.SING
                                 }
                             )
-                        },
-                        containerColor = MidnightBlack
-                    ) { innerPadding ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(innerPadding)
-                        ) {
-                            AnimatedContent(
-                                targetState = currentTab,
-                                transitionSpec = {
-                                    if (targetState.ordinal > initialState.ordinal) {
-                                        slideInHorizontally(animationSpec = tween(280)) { width -> width / 3 } + fadeIn(animationSpec = tween(280)) togetherWith
-                                        slideOutHorizontally(animationSpec = tween(280)) { width -> -width / 3 } + fadeOut(animationSpec = tween(280))
-                                    } else {
-                                        slideInHorizontally(animationSpec = tween(280)) { width -> -width / 3 } + fadeIn(animationSpec = tween(280)) togetherWith
-                                        slideOutHorizontally(animationSpec = tween(280)) { width -> width / 3 } + fadeOut(animationSpec = tween(280))
-                                    }
+
+                            BottomTab.SEARCH -> HomeScreen(
+                                keptSongs = emptyList(),
+                                allSongs = songsWithStats,
+                                onSongClick = { song ->
+                                    activeSingingSong = song
+                                    currentKeyOffset = song.defaultKey
+                                    currentTab = BottomTab.SING
                                 },
-                                label = "ScreenTransition"
-                            ) { tab ->
-                                when (tab) {
-                                    NavTab.HOME -> HomeScreen(
-                                        songsWithStats = songsWithStats,
-                                        keptSongs = keptSongs,
-                                        onStartSinging = { song -> activeSingingSong = song },
-                                        onKeyChange = { id, key -> viewModel.updateSongKey(id, key) },
-                                        onToggleKept = { id, kept -> viewModel.toggleKept(id, kept) },
-                                        onQuickAddSong = { title ->
-                                            viewModel.quickAddAndGetSong(title) { newSong ->
-                                                activeSingingSong = newSong
-                                            }
-                                        }
-                                    )
-                                    NavTab.RECOMMEND -> RecommendationsScreen(
-                                        songsWithStats = songsWithStats,
-                                        onStartSinging = { song -> activeSingingSong = song },
-                                        onKeyChange = { id, key -> viewModel.updateSongKey(id, key) },
-                                        onToggleKept = { id, kept -> viewModel.toggleKept(id, kept) }
-                                    )
-                                    NavTab.HISTORY -> HistoryScreen(
-                                        records = recordsWithSong,
-                                        songsWithStats = songsWithStats
-                                    )
-                                    NavTab.SETTINGS -> SettingsScreen(
-                                        onResetData = { viewModel.resetAllData() }
-                                    )
-                                    NavTab.END_SESSION -> {}
+                                onKeepToggle = { song ->
+                                    viewModel.toggleKept(song.id, !song.isKept)
+                                },
+                                onSingClick = { song ->
+                                    activeSingingSong = song
+                                    currentKeyOffset = song.defaultKey
+                                    currentTab = BottomTab.SING
                                 }
-                            }
+                            )
+
+                            BottomTab.SING -> NowSingingView(
+                                song = activeSingingSong,
+                                currentKey = currentKeyOffset,
+                                selectedMachine = currentMachine,
+                                onKeyChange = { currentKeyOffset = it },
+                                onMachineChange = { currentMachine = it },
+                                onInputScoreClick = { showScoreInputSheet = true },
+                                onCancelClick = {
+                                    activeSingingSong = null
+                                    currentTab = BottomTab.HOME
+                                }
+                            )
+
+                            BottomTab.HISTORY -> HistoryScreen(
+                                records = recordsWithSong
+                            )
+
+                            BottomTab.SETTINGS -> SettingsScreen()
+                        }
+
+                        if (showScoreInputSheet) {
+                            ScoreInputSheet(
+                                songTitle = activeSingingSong?.title ?: "繝輔Μ繝ｼ豁悟罰",
+                                onScoreSubmit = { score ->
+                                    val song = activeSingingSong ?: SongEntity(title = "繝輔Μ繝ｼ豁悟罰")
+                                    viewModel.recordScore(
+                                        song = song,
+                                        score = score,
+                                        keyChange = currentKeyOffset,
+                                        machineType = currentMachine, memo = ""
+                                    )
+                                    showScoreInputSheet = false
+                                    activeSingingSong = null
+                                    currentTab = BottomTab.HISTORY
+                                },
+                                onDismiss = { showScoreInputSheet = false }
+                            )
                         }
                     }
-                }
-
-                if (showScoreInputSheet && activeSingingSong != null) {
-                    val currentSong = activeSingingSong!!
-                    val prevMaxScore = songsWithStats.find { it.id == currentSong.id }?.maxScore
-
-                    ScoreInputSheet(
-                        songTitle = currentSong.title,
-                        onDismissRequest = { showScoreInputSheet = false },
-                        onSubmit = { score, memo ->
-                            viewModel.recordScore(
-                                song = currentSong,
-                                score = score,
-                                keyChange = currentSong.defaultKey,
-                                machineType = currentMachine,
-                                memo = memo
-                            )
-                            showScoreInputSheet = false
-                            lastResultData = Triple(currentSong.title, score, prevMaxScore)
-                        }
-                    )
-                }
-
-                if (lastResultData != null) {
-                    val (title, score, prevScore) = lastResultData!!
-                    ScoreResultModal(
-                        songTitle = title,
-                        score = score,
-                        previousScore = prevScore,
-                        maxScoreBefore = prevScore,
-                        onNextSong = {
-                            lastResultData = null
-                            activeSingingSong = null
-                            currentTab = NavTab.HOME
-                        },
-                        onReplaySinging = {
-                            lastResultData = null
-                        }
-                    )
-                }
-
-                if (showSessionSummaryDialog) {
-                    SessionSummaryDialog(
-                        sessionRecords = sessionRecords,
-                        onFinishSession = {
-                            showSessionSummaryDialog = false
-                            isSessionActive = false
-                            activeSingingSong = null
-                            lastResultData = null
-                            viewModel.resetSession()
-                        }
-                    )
                 }
             }
         }
     }
 }
+
