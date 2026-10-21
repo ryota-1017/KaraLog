@@ -3,8 +3,8 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -39,22 +39,23 @@ fun HeaderBar(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     text = "KaraLog",
-                    fontSize = 24.sp,
+                    fontSize = 22.sp,
                     fontStyle = FontStyle.Italic,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Cursive,
+                    fontFamily = FontFamily.Serif,
                     letterSpacing = (-0.5).sp,
                     color = TextMain
                 )
+                // Clean outlined vector icon (no emoji feel)
                 Icon(
-                    imageVector = Icons.Default.Mic,
+                    imageVector = Icons.Outlined.Mic,
                     contentDescription = null,
                     tint = TextMain,
-                    modifier = Modifier.size(19.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
 
@@ -63,7 +64,7 @@ fun HeaderBar(
                 modifier = Modifier.size(36.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Tune,
+                    imageVector = Icons.Outlined.Tune,
                     contentDescription = "Filter",
                     tint = TextMain,
                     modifier = Modifier.size(22.dp)

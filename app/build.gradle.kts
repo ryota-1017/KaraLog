@@ -13,8 +13,8 @@ android {
         applicationId = "com.karalog.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.2.0"
+        versionCode = 3
+        versionName = "1.2.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -74,3 +74,4 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
+
