@@ -1,4 +1,4 @@
-package com.karalog.app.ui.screens.settings
+﻿package com.karalog.app.ui.screens.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -45,7 +45,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 .padding(top = 32.dp),
             contentAlignment = androidx.compose.ui.Alignment.Center
         ) {
-            Text("KaraLog v2.0 · Minimal Karaoke Assistant", fontSize = 11.sp, color = IconInactive)
+            Text("KaraLog v1.2.2 · Minimal Karaoke Assistant", fontSize = 11.sp, color = IconInactive)
         }
     }
 }
