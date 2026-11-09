@@ -11,10 +11,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.karalog.app.ui.theme.*
+import com.karalog.app.util.HapticHelper
 
 @Composable
 fun ScoreInputSheet(
@@ -23,9 +25,11 @@ fun ScoreInputSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var input by remember { mutableStateOf("") }
 
     fun onKey(char: String) {
+        HapticHelper.playClick(context)
         if (char == "BS") {
             if (input.isNotEmpty()) input = input.dropLast(1)
             return
@@ -77,7 +81,7 @@ fun ScoreInputSheet(
                 text = if (input.isEmpty()) "00.000" else input,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = TextMain
+                color = if (input.isEmpty()) TextSub else TextMain
             )
         }
 
@@ -115,15 +119,16 @@ fun ScoreInputSheet(
             onClick = {
                 val score = input.toDoubleOrNull()
                 if (score != null && score in 0.0..100.0) {
+                    HapticHelper.playSuccess(context)
                     onScoreSubmit(score)
                 }
             },
             enabled = input.isNotEmpty(),
             colors = ButtonDefaults.buttonColors(containerColor = TextMain, contentColor = BgPrimary),
             shape = RectangleShape,
-            modifier = Modifier.fillMaxWidth().height(42.dp)
+            modifier = Modifier.fillMaxWidth().height(44.dp)
         ) {
-            Text("保存", fontSize = 13.sp)
+            Text("スコアを確定して記録", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
         }
     }
 }

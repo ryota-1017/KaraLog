@@ -1,14 +1,18 @@
 package com.karalog.app.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,136 +27,231 @@ fun NowSingingView(
     onKeyChange: (Int) -> Unit,
     onMachineChange: (String) -> Unit,
     onInputScoreClick: () -> Unit,
+    onSongChangeClick: () -> Unit,
     onCancelClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val keyStr = when {
         currentKey == 0 -> "±0"
-        currentKey > 0 -> "+ ${currentKey}"
-        else -> "${currentKey}"
+        currentKey > 0 -> "+$currentKey"
+        else -> "$currentKey"
     }
 
     Column(
         modifier = modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .background(BgPrimary)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(BgSecondary)
-                .padding(16.dp)
-        ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // ステータスヘッダー
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "歌唱中の楽曲", fontSize = 11.sp, color = TextSub)
-                if (song != null) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(Icons.Default.Mic, contentDescription = null, tint = TextMain, modifier = Modifier.size(16.dp))
                     Text(
-                        text = "曲を変更",
-                        fontSize = 11.sp,
-                        color = TextSub,
-                        modifier = Modifier.padding(start = 8.dp)
+                        text = "歌唱中 / 待機",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextMain
                     )
                 }
-            }
-            Text(
-                text = song?.title ?: "フリー歌唱 (曲指定なし)",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = TextMain,
-                modifier = Modifier.padding(top = 4.dp)
-            )
-            if (song != null) {
-                val req = if (song.requestNumber.isNotEmpty()) song.requestNumber else "-"
+
                 Text(
-                    text = song.artist + " / 予約番号: " + req,
+                    text = "曲を変更",
                     fontSize = 12.sp,
                     color = TextSub,
-                    modifier = Modifier.padding(top = 2.dp)
+                    modifier = Modifier.clickable { onSongChangeClick() }
                 )
             }
-        }
 
-        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // 楽曲情報カード
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(BgSecondary)
+                    .padding(16.dp)
             ) {
-                Text(text = "機種:", fontSize = 12.sp, color = TextSub)
-                listOf("DAM", "JOYSOUND").forEach { m ->
-                    val isSel = selectedMachine.contains(m)
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = m,
-                        fontSize = 11.sp,
-                        color = if (isSel) BgPrimary else TextSub,
-                        modifier = Modifier
-                            .background(if (isSel) TextMain else BgSecondary)
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                        text = song?.title ?: "フリー歌唱",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextMain,
+                        maxLines = 2
+                    )
+
+                    Text(
+                        text = if (song != null && song.artist.isNotEmpty()) song.artist else "アーティスト未設定",
+                        fontSize = 13.sp,
+                        color = TextSub,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "デンモク予約番号",
+                        fontSize = 10.sp,
+                        color = TextSub,
+                        fontWeight = FontWeight.Medium
+                    )
+
+                    val reqNumber = song?.requestNumber?.ifEmpty { null } ?: "-"
+                    Text(
+                        text = reqNumber,
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextMain,
+                        letterSpacing = 2.sp
                     )
                 }
             }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 機種選択
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(BgSecondary)
+                    .padding(14.dp)
             ) {
-                Text(text = "キー:", fontSize = 12.sp, color = TextSub)
-                IconButton(
-                    onClick = { onKeyChange(currentKey - 1) },
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(Icons.Default.Remove, contentDescription = "-", tint = TextMain, modifier = Modifier.size(16.dp))
-                }
                 Text(
-                    text = keyStr,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = TextMain
+                    text = "カラオケ機種",
+                    fontSize = 11.sp,
+                    color = TextSub,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
-                IconButton(
-                    onClick = { onKeyChange(currentKey + 1) },
-                    modifier = Modifier.size(28.dp)
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "+", tint = TextMain, modifier = Modifier.size(16.dp))
+                    listOf("DAM", "JOYSOUND").forEach { machine ->
+                        val isSelected = selectedMachine.contains(machine)
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(38.dp)
+                                .background(if (isSelected) TextMain else BgPrimary)
+                                .border(1.dp, BorderLight)
+                                .clickable { onMachineChange(machine) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = machine,
+                                fontSize = 12.sp,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                color = if (isSelected) BgPrimary else TextMain
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // キー微調整
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(BgSecondary)
+                    .padding(14.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(text = "キー設定", fontSize = 11.sp, color = TextSub)
+                        if (song != null) {
+                            val defaultKeyStr = when {
+                                song.defaultKey == 0 -> "±0"
+                                song.defaultKey > 0 -> "+${song.defaultKey}"
+                                else -> "${song.defaultKey}"
+                            }
+                            Text(
+                                text = "登録マイキー: $defaultKeyStr",
+                                fontSize = 10.sp,
+                                color = TextSub
+                            )
+                        }
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        IconButton(
+                            onClick = { onKeyChange(currentKey - 1) },
+                            modifier = Modifier
+                                .size(34.dp)
+                                .background(BgPrimary)
+                                .border(1.dp, BorderLight)
+                        ) {
+                            Icon(Icons.Default.Remove, contentDescription = "-", tint = TextMain, modifier = Modifier.size(16.dp))
+                        }
+
+                        Text(
+                            text = keyStr,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextMain,
+                            modifier = Modifier.widthIn(min = 36.dp),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+
+                        IconButton(
+                            onClick = { onKeyChange(currentKey + 1) },
+                            modifier = Modifier
+                                .size(34.dp)
+                                .background(BgPrimary)
+                                .border(1.dp, BorderLight)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = "+", tint = TextMain, modifier = Modifier.size(16.dp))
+                        }
+                    }
                 }
             }
         }
 
-        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        // 下部アクションボタン
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            OutlinedButton(
-                onClick = onCancelClick,
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = TextMain),
-                border = androidx.compose.foundation.BorderStroke(1.dp, BorderLight),
-                shape = androidx.compose.ui.graphics.RectangleShape,
-                modifier = Modifier.weight(1f).height(40.dp)
-            ) {
-                Text("キャンセル", fontSize = 12.sp)
-            }
             Button(
                 onClick = onInputScoreClick,
                 colors = ButtonDefaults.buttonColors(containerColor = TextMain, contentColor = BgPrimary),
-                shape = androidx.compose.ui.graphics.RectangleShape,
-                modifier = Modifier.weight(1.5f).height(40.dp)
+                shape = RectangleShape,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
             ) {
-                Text("スコアを入力", fontSize = 12.sp)
+                Text("歌い終わった！スコアを入力", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            }
+
+            OutlinedButton(
+                onClick = onCancelClick,
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = TextSub),
+                border = androidx.compose.foundation.BorderStroke(1.dp, BorderLight),
+                shape = RectangleShape,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+            ) {
+                Text("歌唱をキャンセル", fontSize = 12.sp)
             }
         }
     }

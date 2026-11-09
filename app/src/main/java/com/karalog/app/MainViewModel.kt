@@ -1,4 +1,4 @@
-package com.karalog.app
+﻿package com.karalog.app
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -25,6 +25,9 @@ class MainViewModel(private val repository: KaraLogRepository) : ViewModel() {
         viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList()
     )
 
+    private val _sessionStartTime = MutableStateFlow(System.currentTimeMillis())
+    val sessionStartTime: StateFlow<Long> = _sessionStartTime.asStateFlow()
+
     private val _sessionRecords = MutableStateFlow<List<Pair<String, SingingRecordEntity>>>(emptyList())
     val sessionRecords: StateFlow<List<Pair<String, SingingRecordEntity>>> = _sessionRecords.asStateFlow()
 
@@ -33,7 +36,7 @@ class MainViewModel(private val repository: KaraLogRepository) : ViewModel() {
         score: Double,
         keyChange: Int,
         machineType: String,
-        memo: String
+        memo: String = ""
     ) {
         viewModelScope.launch {
             val record = SingingRecordEntity(
@@ -48,10 +51,51 @@ class MainViewModel(private val repository: KaraLogRepository) : ViewModel() {
         }
     }
 
-    fun quickAddAndGetSong(title: String, onSongReady: (SongEntity) -> Unit) {
+    fun quickAddAndGetSong(
+        title: String,
+        artist: String = "",
+        requestNumber: String = "",
+        defaultKey: Int = 0,
+        isDam: Boolean = true,
+        isJoy: Boolean = true,
+        onSongReady: (SongEntity) -> Unit = {}
+    ) {
         viewModelScope.launch {
-            val song = repository.findOrCreateSong(title, "")
-            onSongReady(song)
+            val trimmedTitle = title.trim()
+            val trimmedArtist = artist.trim()
+            val existing = repository.findOrCreateSong(trimmedTitle, trimmedArtist)
+            val updated = existing.copy(
+                requestNumber = if (requestNumber.isNotEmpty()) requestNumber else existing.requestNumber,
+                defaultKey = if (defaultKey != 0) defaultKey else existing.defaultKey,
+                isDamAvailable = isDam,
+                isJoysoundAvailable = isJoy,
+                isKept = true
+            )
+            repository.updateSong(updated)
+            onSongReady(updated)
+        }
+    }
+
+    fun saveSong(song: SongEntity) {
+        viewModelScope.launch {
+            if (song.id == 0L) {
+                repository.insertSong(song)
+            } else {
+                repository.updateSong(song)
+            }
+        }
+    }
+
+    fun deleteSong(songId: Long) {
+        viewModelScope.launch {
+            repository.deleteSong(songId)
+        }
+    }
+
+    fun deleteRecord(recordId: Long) {
+        viewModelScope.launch {
+            repository.deleteRecord(recordId)
+            _sessionRecords.value = _sessionRecords.value.filter { it.second.id != recordId }
         }
     }
 
@@ -68,6 +112,7 @@ class MainViewModel(private val repository: KaraLogRepository) : ViewModel() {
     }
 
     fun resetSession() {
+        _sessionStartTime.value = System.currentTimeMillis()
         _sessionRecords.value = emptyList()
     }
 
@@ -77,6 +122,9 @@ class MainViewModel(private val repository: KaraLogRepository) : ViewModel() {
             _sessionRecords.value = emptyList()
         }
     }
+
+    suspend fun exportJson(): String = repository.exportJson()
+    suspend fun importJson(json: String): Boolean = repository.importJson(json)
 }
 
 class MainViewModelFactory(private val repository: KaraLogRepository) : ViewModelProvider.Factory {

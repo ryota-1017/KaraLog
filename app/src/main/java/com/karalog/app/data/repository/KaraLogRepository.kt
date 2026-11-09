@@ -1,5 +1,7 @@
-package com.karalog.app.data.repository
+﻿package com.karalog.app.data.repository
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.karalog.app.data.local.dao.SingingRecordDao
 import com.karalog.app.data.local.dao.SongDao
 import com.karalog.app.data.local.entity.SingingRecordEntity
@@ -8,6 +10,7 @@ import com.karalog.app.data.model.SingingRecordWithSong
 import com.karalog.app.data.model.SongWithStats
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 
 class KaraLogRepository(
     private val songDao: SongDao,
@@ -16,8 +19,6 @@ class KaraLogRepository(
     val songsFlow: Flow<List<SongEntity>> = songDao.getAllActiveSongs()
     val keptSongsFlow: Flow<List<SongEntity>> = songDao.getKeptSongs()
     val recordsFlow: Flow<List<SingingRecordEntity>> = recordDao.getAllActiveRecords()
-    val trashSongsFlow: Flow<List<SongEntity>> = songDao.getTrashSongs()
-    val trashRecordsFlow: Flow<List<SingingRecordEntity>> = recordDao.getTrashRecords()
 
     val songsWithStatsFlow: Flow<List<SongWithStats>> = combine(songsFlow, recordsFlow) { songs, records ->
         val recordMap = records.groupBy { it.songId }
@@ -81,21 +82,45 @@ class KaraLogRepository(
         return id
     }
 
-    suspend fun moveToTrashSong(songId: Long) = songDao.moveToTrash(songId)
-    suspend fun restoreSong(songId: Long) = songDao.restoreFromTrash(songId)
-    suspend fun deletePermanentlySong(songId: Long) = songDao.deletePermanently(songId)
-
-    suspend fun moveToTrashRecord(recordId: Long) = recordDao.moveToTrash(recordId)
-    suspend fun restoreRecord(recordId: Long) = recordDao.restoreFromTrash(recordId)
-    suspend fun deletePermanentlyRecord(recordId: Long) = recordDao.deletePermanently(recordId)
-
-    suspend fun emptyTrash() {
-        songDao.emptyTrash()
-        recordDao.emptyTrash()
-    }
+    suspend fun deleteRecord(recordId: Long) = recordDao.deletePermanently(recordId)
+    suspend fun deleteSong(songId: Long) = songDao.deletePermanently(songId)
 
     suspend fun deleteAllData() {
         songDao.deleteAll()
         recordDao.deleteAll()
+    }
+
+    suspend fun exportJson(): String {
+        val songs = songsFlow.first()
+        val records = recordsFlow.first()
+        val map = mapOf(
+            "version" to "1.2.2",
+            "songs" to songs,
+            "records" to records
+        )
+        return Gson().toJson(map)
+    }
+
+    suspend fun importJson(json: String): Boolean {
+        return try {
+            val type = object : TypeToken<Map<String, Any>>() {}.type
+            val map: Map<String, Any> = Gson().fromJson(json, type)
+            val songsJson = Gson().toJson(map["songs"])
+            val recordsJson = Gson().toJson(map["records"])
+
+            val songsType = object : TypeToken<List<SongEntity>>() {}.type
+            val recordsType = object : TypeToken<List<SingingRecordEntity>>() {}.type
+
+            val songs: List<SongEntity> = Gson().fromJson(songsJson, songsType)
+            val records: List<SingingRecordEntity> = Gson().fromJson(recordsJson, recordsType)
+
+            songDao.deleteAll()
+            recordDao.deleteAll()
+            songDao.insertSongs(songs)
+            records.forEach { recordDao.insertRecord(it) }
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 }

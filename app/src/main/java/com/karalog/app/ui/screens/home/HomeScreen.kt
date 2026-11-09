@@ -8,9 +8,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,12 +30,13 @@ import java.util.*
 @Composable
 fun HomeScreen(
     recommendedSongs: List<SongWithStats>,
+    keptSongs: List<SongWithStats>,
     rankingRecords: List<SingingRecordWithSong>,
     onSongClick: (SongEntity) -> Unit,
     onKeepToggle: (SongEntity) -> Unit,
     onSingClick: (SongEntity) -> Unit,
     onSearchClick: () -> Unit,
-    onHistoryClick: () -> Unit,
+    onBestClick: () -> Unit,
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -46,27 +47,84 @@ fun HomeScreen(
             .fillMaxSize()
             .background(BgPrimary)
     ) {
+        // 1. Instagram Stories-like circular action tray
         item {
             StoriesActionTray(
                 onSearchClick = onSearchClick,
-                onSingClick = { onSearchClick() },
-                onHistoryClick = onHistoryClick,
+                onSingClick = { onSongClick(SongEntity(title = "フリー歌唱")) },
+                onHistoryClick = onBestClick,
                 onAddClick = onAddClick
             )
             Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
         }
 
-        item {
-            Text(
-                text = "オススメ曲",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextMain,
-                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 6.dp)
-            )
+        // 2. 本日のキープ（歌いたい曲）
+        if (keptSongs.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Icon(Icons.Default.Bookmark, contentDescription = null, tint = TextMain, modifier = Modifier.size(16.dp))
+                        Text(
+                            text = "歌唱候補 (${keptSongs.size})",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextMain
+                        )
+                    }
+                    Text(
+                        text = "タップで即歌唱",
+                        fontSize = 11.sp,
+                        color = TextSub
+                    )
+                }
+            }
+
+            items(keptSongs.take(5), key = { it.song.id }) { item ->
+                SongCard(
+                    songWithStats = item,
+                    onSongClick = { onSongClick(item.song) },
+                    onKeepToggle = { onKeepToggle(item.song) },
+                    onSingClick = { onSingClick(item.song) }
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(10.dp))
+                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
+            }
         }
 
-        items(recommendedSongs.take(4), key = { it.song.id }) { item ->
+        // 3. オススメ曲 Section (Recommended Songs from sketch)
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "オススメ曲",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextMain
+                )
+                Text(
+                    text = "全曲を見る ➔",
+                    fontSize = 11.sp,
+                    color = TextSub,
+                    modifier = Modifier.clickable { onSearchClick() }
+                )
+            }
+        }
+
+        items(recommendedSongs.take(4), key = { "rec_${it.song.id}" }) { item ->
             SongCard(
                 songWithStats = item,
                 onSongClick = { onSongClick(item.song) },
@@ -75,6 +133,7 @@ fun HomeScreen(
             )
         }
 
+        // 4. 過去のランキング Section (Past Rankings from sketch)
         item {
             Text(
                 text = "過去のランキング",
