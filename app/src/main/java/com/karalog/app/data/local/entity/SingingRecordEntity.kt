@@ -23,8 +23,11 @@ data class SingingRecordEntity(
     val songId: Long,
     val date: Long = System.currentTimeMillis(),
     val score: Double,
+    val pitchAccuracy: Double? = null,
+    val expressionScore: Double? = null,
     val keyChange: Int = 0,
-    val machineType: String = "DAM (\u7cbe\u5bc6\u63a1\u70b9Ai)",
+    val machineType: String = "DAM (精密採点Ai)",
     val memo: String = "",
+    val techniqueNotes: String = "",
     val isTrashed: Boolean = false
 )

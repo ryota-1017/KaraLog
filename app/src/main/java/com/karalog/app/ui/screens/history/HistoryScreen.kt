@@ -7,15 +7,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.karalog.app.data.model.SingingRecordWithSong
 import com.karalog.app.ui.theme.*
+import com.karalog.app.util.ShareCardHelper
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -26,6 +31,7 @@ fun HistoryScreen(
     onDeleteRecord: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var selectedTab by remember { mutableStateOf("SESSION") } // "SESSION" or "ALL"
     val dateFormat = SimpleDateFormat("yyyy.MM.dd HH:mm", Locale.JAPAN)
 
@@ -47,28 +53,51 @@ fun HistoryScreen(
             .fillMaxSize()
             .background(BgPrimary)
     ) {
-        // Tab Selector: [今日のセッション] vs [全履歴]
+        // Tab Selector: [今日のセッション] vs [全履歴] & Share Button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(BgPrimary)
                 .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            listOf("SESSION" to "今日のセッション", "ALL" to "全履歴 (${records.size})").forEach { (tabCode, label) ->
-                val isSel = selectedTab == tabCode
-                Box(
-                    modifier = Modifier
-                        .clickable { selectedTab = tabCode }
-                        .background(if (isSel) TextMain else BgSecondary)
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("SESSION" to "今日のセッション", "ALL" to "全履歴 (${records.size})").forEach { (tabCode, label) ->
+                    val isSel = selectedTab == tabCode
+                    Box(
+                        modifier = Modifier
+                            .clickable { selectedTab = tabCode }
+                            .background(if (isSel) TextMain else BgSecondary)
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = label,
+                            fontSize = 12.sp,
+                            color = if (isSel) BgPrimary else TextSub,
+                            fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                }
+            }
+
+            if (selectedTab == "SESSION" && displayedRecords.isNotEmpty()) {
+                OutlinedButton(
+                    onClick = {
+                        ShareCardHelper.generateAndShareSetlist(
+                            context = context,
+                            records = displayedRecords,
+                            sessionDate = sessionStartTime
+                        )
+                    },
+                    shape = RectangleShape,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderLight),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                    modifier = Modifier.height(30.dp)
                 ) {
-                    Text(
-                        text = label,
-                        fontSize = 12.sp,
-                        color = if (isSel) BgPrimary else TextSub,
-                        fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
-                    )
+                    Icon(Icons.Default.Share, contentDescription = null, tint = TextMain, modifier = Modifier.size(12.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("セトリ共有", fontSize = 11.sp, color = TextMain)
                 }
             }
         }
@@ -96,7 +125,8 @@ fun HistoryScreen(
                     Text(
                         text = value,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
                         color = TextMain
                     )
                 }
@@ -105,7 +135,7 @@ fun HistoryScreen(
 
         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
 
-        // MVP Song Banner (if in session and has record)
+        // MVP Song Banner
         if (selectedTab == "SESSION" && totalCount > 0) {
             Row(
                 modifier = Modifier
@@ -114,7 +144,7 @@ fun HistoryScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "👑 今日のMVP曲:", fontSize = 11.sp, color = TextSub)
+                Text(text = "👑 本日のMVP曲:", fontSize = 11.sp, color = TextSub)
                 Text(text = mvpSong ?: "-", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMain)
             }
             Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
@@ -175,16 +205,30 @@ fun HistoryScreen(
                                     Text(text = mach, fontSize = 11.sp, color = TextSub)
                                     Text(text = "/", fontSize = 10.sp, color = BorderLight)
                                     Text(text = "キー $keyStr", fontSize = 11.sp, color = TextSub)
+                                    if (rec.pitchAccuracy != null) {
+                                        Text(text = "/", fontSize = 10.sp, color = BorderLight)
+                                        Text(text = "音程 ${rec.pitchAccuracy}%", fontSize = 11.sp, color = TextSub)
+                                    }
                                     Text(text = "/", fontSize = 10.sp, color = BorderLight)
                                     Text(text = dateStr, fontSize = 10.sp, color = TextSub)
+                                }
+
+                                if (rec.techniqueNotes.isNotEmpty()) {
+                                    Text(
+                                        text = "メモ: ${rec.techniqueNotes}",
+                                        fontSize = 10.sp,
+                                        color = TextSub,
+                                        modifier = Modifier.padding(top = 2.dp)
+                                    )
                                 }
                             }
 
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                 Text(
                                     text = String.format("%.3f", rec.score),
-                                    fontSize = 15.sp,
+                                    fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace,
                                     color = TextMain
                                 )
                                 IconButton(

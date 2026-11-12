@@ -16,6 +16,7 @@ data class SongEntity(
     val defaultKey: Int = 0,
     val isKept: Boolean = false,
     val genre: String = "",
+    val stageTag: String = "", // "WARMUP", "BEST", "CLIMAX", "PRACTICE"
     val memo: String = "",
     val isTrashed: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),

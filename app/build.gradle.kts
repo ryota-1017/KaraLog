@@ -13,8 +13,8 @@ android {
         applicationId = "com.karalog.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.2.2"
+        versionCode = 6
+        versionName = "1.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -72,6 +72,8 @@ dependencies {
     // Gson for JSON Backup/Restore
     implementation("com.google.code.gson:gson:2.11.0")
 
+    // ML Kit Text Recognition for Camera Score OCR
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
-

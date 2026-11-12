@@ -27,6 +27,8 @@ fun SettingsScreen(
     totalRecordsCount: Int,
     currentDefaultMachine: String,
     onDefaultMachineChange: (String) -> Unit,
+    currentThemeMode: String = "SYSTEM",
+    onThemeModeChange: (String) -> Unit = {},
     onResetSession: () -> Unit,
     onResetAllData: () -> Unit,
     onExportJson: suspend () -> String,
@@ -45,6 +47,45 @@ fun SettingsScreen(
             .background(BgPrimary)
             .verticalScroll(rememberScrollState())
     ) {
+        // Section: Appearance & Theme
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(BgSecondary)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Text("外観 ＆ テーマ", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMain)
+        }
+        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
+
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Text("テーマ設定", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextMain)
+            Text("暗いカラオケ部屋では「ダーク (True Black)」が眩しくなく快適です", fontSize = 11.sp, color = TextSub, modifier = Modifier.padding(top = 2.dp))
+            Row(modifier = Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(
+                    "SYSTEM" to "システム連動",
+                    "DARK" to "ダーク (漆黒)",
+                    "LIGHT" to "ライト"
+                ).forEach { (mode, label) ->
+                    val isSel = currentThemeMode == mode
+                    Box(
+                        modifier = Modifier
+                            .clickable { onThemeModeChange(mode) }
+                            .background(if (isSel) TextMain else BgSecondary)
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = label,
+                            fontSize = 12.sp,
+                            fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                            color = if (isSel) BgPrimary else TextSub
+                        )
+                    }
+                }
+            }
+        }
+        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
+
         // Section: Environment
         Row(
             modifier = Modifier
@@ -122,16 +163,16 @@ fun SettingsScreen(
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         val clip = ClipData.newPlainText("KaraLog Backup", json)
                         clipboard.setPrimaryClip(clip)
-                        Toast.makeText(context, "バックアップJSONをクリップボードにコピーしました", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "全データをクリップボードにコピーしました", Toast.LENGTH_SHORT).show()
                     }
                 }
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                Text("バックアップのエクスポート", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextMain)
-                Text("登録曲と履歴全データをJSON形式でクリップボードへコピーします", fontSize = 11.sp, color = TextSub, modifier = Modifier.padding(top = 2.dp))
+            Column {
+                Text("データをJSONで書き出し (エクスポート)", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextMain)
+                Text("全楽曲・スコア履歴をクリップボードにコピーします", fontSize = 11.sp, color = TextSub, modifier = Modifier.padding(top = 2.dp))
             }
             Text("コピー", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMain)
         }
@@ -146,9 +187,9 @@ fun SettingsScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                Text("バックアップのインポート (復元)", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextMain)
-                Text("以前エクスポートしたJSONテキストから全データを復元します", fontSize = 11.sp, color = TextSub, modifier = Modifier.padding(top = 2.dp))
+            Column {
+                Text("JSONからデータを復元 (インポート)", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextMain)
+                Text("以前書き出したJSONから楽曲と履歴を復元します", fontSize = 11.sp, color = TextSub, modifier = Modifier.padding(top = 2.dp))
             }
             Text("復元", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMain)
         }
@@ -163,9 +204,9 @@ fun SettingsScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                Text("全データの初期化", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextMain)
-                Text("登録曲と歌唱履歴をすべて消去し初期状態に戻します", fontSize = 11.sp, color = TextSub, modifier = Modifier.padding(top = 2.dp))
+            Column {
+                Text("全データを初期化", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextMain)
+                Text("登録された曲とすべての履歴を完全に削除します", fontSize = 11.sp, color = TextSub, modifier = Modifier.padding(top = 2.dp))
             }
             Text("初期化", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMain)
         }
@@ -186,7 +227,7 @@ fun SettingsScreen(
             Text("完全ローカル・プライベート保護", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextMain)
             Text(
                 "登録曲: $totalSongsCount 曲 / 歌唱履歴: $totalRecordsCount 件\n" +
-                        "データは端末内のSQLite/Roomにのみ暗号化保存され、外部通信・サーバー代0円・登録不要で利用可能です。",
+                        "データは端末内のSQLite/Roomにのみ保存され、外部通信なし・サーバー代0円・登録不要で利用可能です。",
                 fontSize = 11.sp,
                 color = TextSub,
                 lineHeight = 16.sp,
@@ -202,7 +243,7 @@ fun SettingsScreen(
                 .padding(vertical = 36.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text("KaraLog v1.2.2 · Minimal Karaoke Assistant", fontSize = 11.sp, color = IconInactive)
+            Text("KaraLog v1.4.0 · Minimal Karaoke Assistant", fontSize = 11.sp, color = IconInactive)
         }
     }
 
@@ -219,7 +260,7 @@ fun SettingsScreen(
                         value = importInput,
                         onValueChange = { importInput = it },
                         modifier = Modifier.fillMaxWidth().height(120.dp),
-                        placeholder = { Text("{\"version\":\"1.2.2\"...}", fontSize = 10.sp) }
+                        placeholder = { Text("{\"version\":\"1.4.0\"...}", fontSize = 10.sp) }
                     )
                 }
             },

@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,8 +36,15 @@ class MainActivity : ComponentActivity() {
         val repository = app.repository
 
         setContent {
-            KaraLogTheme {
-                val viewModel: MainViewModel = viewModel(factory = MainViewModelFactory(repository))
+            val viewModel: MainViewModel = viewModel(factory = MainViewModelFactory(repository))
+            val themeMode by viewModel.themeMode.collectAsState()
+            val isDark = when (themeMode) {
+                "DARK" -> true
+                "LIGHT" -> false
+                else -> isSystemInDarkTheme()
+            }
+
+            KaraLogTheme(darkTheme = isDark) {
                 val songsWithStats by viewModel.songsWithStats.collectAsState()
                 val keptSongs by viewModel.keptSongs.collectAsState()
                 val recordsWithSong by viewModel.recordsWithSong.collectAsState()
@@ -149,6 +157,8 @@ class MainActivity : ComponentActivity() {
                                 totalRecordsCount = recordsWithSong.size,
                                 currentDefaultMachine = currentMachine,
                                 onDefaultMachineChange = { currentMachine = it },
+                                currentThemeMode = themeMode,
+                                onThemeModeChange = { viewModel.setThemeMode(it) },
                                 onResetSession = {
                                     viewModel.resetSession()
                                 },
@@ -169,7 +179,7 @@ class MainActivity : ComponentActivity() {
                         if (showScoreInputSheet) {
                             ScoreInputSheet(
                                 songTitle = activeSingingSong?.title ?: "フリー歌唱",
-                                onScoreSubmit = { score ->
+                                onScoreSubmit = { score, pitch, notes ->
                                     val currentSong = activeSingingSong
                                     val stat = songsWithStats.find { it.song.id == currentSong?.id }
                                     val maxBefore = stat?.maxScore
@@ -179,6 +189,8 @@ class MainActivity : ComponentActivity() {
                                     viewModel.recordScore(
                                         song = songToRecord,
                                         score = score,
+                                        pitchAccuracy = pitch,
+                                        techniqueNotes = notes,
                                         keyChange = currentKeyOffset,
                                         machineType = currentMachine,
                                         memo = ""

@@ -31,20 +31,33 @@ class MainViewModel(private val repository: KaraLogRepository) : ViewModel() {
     private val _sessionRecords = MutableStateFlow<List<Pair<String, SingingRecordEntity>>>(emptyList())
     val sessionRecords: StateFlow<List<Pair<String, SingingRecordEntity>>> = _sessionRecords.asStateFlow()
 
+    private val _themeMode = MutableStateFlow("SYSTEM") // "SYSTEM", "DARK", "LIGHT"
+    val themeMode: StateFlow<String> = _themeMode.asStateFlow()
+
+    fun setThemeMode(mode: String) {
+        _themeMode.value = mode
+    }
+
     fun recordScore(
         song: SongEntity,
         score: Double,
         keyChange: Int,
         machineType: String,
-        memo: String = ""
+        memo: String = "",
+        pitchAccuracy: Double? = null,
+        expressionScore: Double? = null,
+        techniqueNotes: String = ""
     ) {
         viewModelScope.launch {
             val record = SingingRecordEntity(
                 songId = song.id,
                 score = score,
+                pitchAccuracy = pitchAccuracy,
+                expressionScore = expressionScore,
                 keyChange = keyChange,
                 machineType = machineType,
-                memo = memo
+                memo = memo,
+                techniqueNotes = techniqueNotes
             )
             repository.insertRecord(record)
             _sessionRecords.value = _sessionRecords.value + (song.title to record)
@@ -58,6 +71,7 @@ class MainViewModel(private val repository: KaraLogRepository) : ViewModel() {
         defaultKey: Int = 0,
         isDam: Boolean = true,
         isJoy: Boolean = true,
+        stageTag: String = "",
         onSongReady: (SongEntity) -> Unit = {}
     ) {
         viewModelScope.launch {
@@ -69,6 +83,7 @@ class MainViewModel(private val repository: KaraLogRepository) : ViewModel() {
                 defaultKey = if (defaultKey != 0) defaultKey else existing.defaultKey,
                 isDamAvailable = isDam,
                 isJoysoundAvailable = isJoy,
+                stageTag = if (stageTag.isNotEmpty()) stageTag else existing.stageTag,
                 isKept = true
             )
             repository.updateSong(updated)

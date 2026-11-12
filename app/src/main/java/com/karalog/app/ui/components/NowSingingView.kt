@@ -1,5 +1,7 @@
 package com.karalog.app.ui.components
 
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,11 +10,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.ScreenLockPortrait
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +36,17 @@ fun NowSingingView(
     onCancelClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
+    // Keep screen on while singing
+    DisposableEffect(Unit) {
+        val activity = context as? Activity
+        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        onDispose {
+            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+
     val keyStr = when {
         currentKey == 0 -> "±0"
         currentKey > 0 -> "+$currentKey"
@@ -63,6 +79,11 @@ fun NowSingingView(
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = TextMain
+                    )
+                    Text(
+                        text = "· 常時点灯中",
+                        fontSize = 11.sp,
+                        color = TextSub
                     )
                 }
 
@@ -97,7 +118,24 @@ fun NowSingingView(
                         modifier = Modifier.padding(top = 4.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    if (song != null && song.stageTag.isNotEmpty()) {
+                        val stageLabel = when (song.stageTag) {
+                            "WARMUP" -> "ウォーミングアップ"
+                            "BEST" -> "勝負曲・十八番"
+                            "CLIMAX" -> "終盤盛り上がり"
+                            "PRACTICE" -> "練習中"
+                            else -> song.stageTag
+                        }
+                        Text(
+                            text = "# $stageLabel",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = TextSub,
+                            modifier = Modifier.padding(top = 6.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     Text(
                         text = "デンモク予約番号",
@@ -109,8 +147,9 @@ fun NowSingingView(
                     val reqNumber = song?.requestNumber?.ifEmpty { null } ?: "-"
                     Text(
                         text = reqNumber,
-                        fontSize = 32.sp,
+                        fontSize = 34.sp,
                         fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
                         color = TextMain,
                         letterSpacing = 2.sp
                     )
@@ -207,6 +246,7 @@ fun NowSingingView(
                             text = keyStr,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
                             color = TextMain,
                             modifier = Modifier.widthIn(min = 36.dp),
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center

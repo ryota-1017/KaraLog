@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.BookmarkBorder
@@ -14,8 +13,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -36,7 +35,7 @@ fun SearchScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedMachine by remember { mutableStateOf("ALL") } // ALL, DAM, JOY
-    var selectedCategory by remember { mutableStateOf(initialCategory) } // ALL, KEPT, BEST, UNTRIED
+    var selectedCategory by remember { mutableStateOf(initialCategory) } // ALL, KEPT, WARMUP, BEST, CLIMAX, PRACTICE
     var editingSong by remember { mutableStateOf<SongEntity?>(null) }
     var showEditDialog by remember { mutableStateOf(false) }
 
@@ -56,8 +55,10 @@ fun SearchScreen(
 
             val matchesCategory = when (selectedCategory) {
                 "KEPT" -> song.isKept
-                "BEST" -> (item.maxScore ?: 0.0) >= 90.0
-                "UNTRIED" -> item.singCount == 0
+                "WARMUP" -> song.stageTag == "WARMUP"
+                "BEST" -> song.stageTag == "BEST" || (item.maxScore ?: 0.0) >= 90.0
+                "CLIMAX" -> song.stageTag == "CLIMAX"
+                "PRACTICE" -> song.stageTag == "PRACTICE"
                 else -> true
             }
 
@@ -117,7 +118,7 @@ fun SearchScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Clear",
+                            contentDescription = "クリア",
                             tint = IconInactive,
                             modifier = Modifier.size(16.dp)
                         )
@@ -125,52 +126,75 @@ fun SearchScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Machine Filters & Category Pills
+            // Machine Filters & Add Button
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Category Pills
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    listOf("ALL" to "すべて", "KEPT" to "キープ", "BEST" to "十八番", "UNTRIED" to "未挑戦").forEach { (code, label) ->
-                        val isSel = selectedCategory == code
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf("ALL" to "全機種", "DAM" to "DAM", "JOY" to "JOYSOUND").forEach { (code, label) ->
+                        val isSelected = selectedMachine == code
                         Box(
                             modifier = Modifier
-                                .clickable { selectedCategory = code }
-                                .background(if (isSel) TextMain else BgSecondary)
-                                .border(if (isSel) 0.dp else 1.dp, BorderLight)
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .clickable { selectedMachine = code }
+                                .background(if (isSelected) TextMain else BgSecondary)
+                                .border(1.dp, if (isSelected) TextMain else BorderLight)
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
                                 text = label,
                                 fontSize = 11.sp,
-                                color = if (isSel) BgPrimary else TextSub,
-                                fontWeight = if (isSel) FontWeight.SemiBold else FontWeight.Normal
+                                color = if (isSelected) BgPrimary else TextSub,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
                             )
                         }
                     }
                 }
 
-                // Machine Selector (ALL / DAM / JOY)
-                Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-                    listOf("ALL", "DAM", "JOY").forEach { m ->
-                        val isSel = selectedMachine == m
-                        Box(
-                            modifier = Modifier
-                                .clickable { selectedMachine = m }
-                                .background(if (isSel) TextMain else BgSecondary)
-                                .padding(horizontal = 6.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = m,
-                                fontSize = 10.sp,
-                                color = if (isSel) BgPrimary else TextSub,
-                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
+                Text(
+                    text = "+ 新規曲を追加",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextMain,
+                    modifier = Modifier.clickable {
+                        editingSong = SongEntity(title = searchQuery.trim())
+                        showEditDialog = true
+                    }
+                )
+            }
+
+            // Category & Stage Tags Pills
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                listOf(
+                    "ALL" to "すべて",
+                    "KEPT" to "キープ",
+                    "WARMUP" to "序盤",
+                    "BEST" to "勝負曲",
+                    "CLIMAX" to "終盤",
+                    "PRACTICE" to "練習中"
+                ).forEach { (code, label) ->
+                    val isSelected = selectedCategory == code
+                    Box(
+                        modifier = Modifier
+                            .clickable { selectedCategory = code }
+                            .background(if (isSelected) TextMain else BgSecondary)
+                            .border(1.dp, if (isSelected) TextMain else BorderLight)
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = label,
+                            fontSize = 10.sp,
+                            color = if (isSelected) BgPrimary else TextSub,
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                        )
                     }
                 }
             }
@@ -178,80 +202,36 @@ fun SearchScreen(
 
         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
 
-        // Quick Add Card if searching and not exact match
-        if (searchQuery.isNotBlank() && songsWithStats.none { it.song.title.equals(searchQuery.trim(), ignoreCase = true) }) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(BgSecondary)
-                    .clickable {
-                        editingSong = SongEntity(title = searchQuery.trim())
-                        showEditDialog = true
-                    }
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Icon(Icons.Default.Add, contentDescription = null, tint = TextMain, modifier = Modifier.size(18.dp))
-                    Text(
-                        text = "「${searchQuery.trim()}」をマイライブラリに追加",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = TextMain
-                    )
-                }
-                Text("＋登録", fontSize = 11.sp, color = TextMain, fontWeight = FontWeight.Bold)
-            }
-            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
-        }
-
-        // Search Results Count
-        Row(
+        // Search Results List
+        LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+                .fillMaxSize()
+                .background(BgPrimary)
         ) {
-            Text(
-                text = "${filteredSongs.size} 曲が該当",
-                fontSize = 11.sp,
-                color = TextSub
-            )
-            Text(
-                text = "タップで歌唱開始",
-                fontSize = 11.sp,
-                color = TextSub
-            )
-        }
-
-        // Song List
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
             if (filteredSongs.isEmpty()) {
                 item {
-                    Box(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 48.dp),
-                        contentAlignment = Alignment.Center
+                            .padding(vertical = 40.dp, horizontal = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Default.MusicNote, contentDescription = null, tint = IconInactive, modifier = Modifier.size(32.dp))
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("該当する曲が見つかりません", fontSize = 13.sp, color = TextSub)
-                            if (searchQuery.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                OutlinedButton(
-                                    onClick = {
-                                        editingSong = SongEntity(title = searchQuery.trim())
-                                        showEditDialog = true
-                                    },
-                                    shape = RectangleShape,
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, BorderLight),
-                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = TextMain)
-                                ) {
-                                    Text("この曲を登録する", fontSize = 12.sp)
-                                }
+                        Text(
+                            text = if (searchQuery.isEmpty()) "登録された曲がありません" else "「$searchQuery」に一致する曲は見つかりませんでした",
+                            fontSize = 12.sp,
+                            color = TextSub
+                        )
+                        if (searchQuery.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(
+                                onClick = {
+                                    editingSong = SongEntity(title = searchQuery.trim())
+                                    showEditDialog = true
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = TextMain, contentColor = BgPrimary),
+                                shape = RectangleShape
+                            ) {
+                                Text("「$searchQuery」を新規登録する", fontSize = 12.sp)
                             }
                         }
                     }
@@ -259,101 +239,113 @@ fun SearchScreen(
             } else {
                 items(filteredSongs, key = { it.song.id }) { item ->
                     val song = item.song
-                    val bestScore = item.maxScore
-                    val keyStr = when {
+                    val defaultKeyStr = when {
                         song.defaultKey == 0 -> "±0"
                         song.defaultKey > 0 -> "+${song.defaultKey}"
                         else -> "${song.defaultKey}"
                     }
 
-                    Column(modifier = Modifier.fillMaxWidth()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSongClick(song) }
+                    ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onSongClick(song) }
-                                .padding(horizontal = 16.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.weight(1f).padding(end = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(44.dp)
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(BgSecondary)
-                                        .border(0.8.dp, BorderLight, RoundedCornerShape(4.dp)),
-                                    contentAlignment = Alignment.Center
+                            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.MusicNote,
-                                        contentDescription = null,
-                                        tint = IconInactive,
-                                        modifier = Modifier.size(20.dp)
+                                    Text(
+                                        text = song.title,
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = TextMain,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
-                                }
-
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
-                                        Text(
-                                            text = song.title,
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            color = TextMain,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier.weight(1f, fill = false)
-                                        )
-                                        if (bestScore != null) {
-                                            Text(
-                                                text = String.format("%.1f", bestScore),
-                                                fontSize = 11.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = TextMain
-                                            )
+                                    if (song.stageTag.isNotEmpty()) {
+                                        val tagShort = when (song.stageTag) {
+                                            "WARMUP" -> "序盤"
+                                            "BEST" -> "勝負"
+                                            "CLIMAX" -> "終盤"
+                                            "PRACTICE" -> "練習"
+                                            else -> song.stageTag
+                                        }
+                                        Box(
+                                            modifier = Modifier
+                                                .background(BgSecondary)
+                                                .border(1.dp, BorderLight)
+                                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                                        ) {
+                                            Text(tagShort, fontSize = 9.sp, color = TextSub)
                                         }
                                     }
+                                }
 
-                                    Row(
-                                        modifier = Modifier.padding(top = 2.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                    ) {
+                                Row(
+                                    modifier = Modifier.padding(top = 3.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (song.artist.isNotEmpty()) {
+                                        Text(text = song.artist, fontSize = 12.sp, color = TextSub)
+                                        Text(text = "·", fontSize = 10.sp, color = BorderLight)
+                                    }
+                                    Text(text = "キー $defaultKeyStr", fontSize = 11.sp, color = TextSub)
+
+                                    if (song.requestNumber.isNotEmpty()) {
+                                        Text(text = "·", fontSize = 10.sp, color = BorderLight)
                                         Text(
-                                            text = song.artist.ifEmpty { "アーティスト未設定" },
+                                            text = "No. ${song.requestNumber}",
                                             fontSize = 11.sp,
-                                            color = TextSub,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
+                                            fontFamily = FontFamily.Monospace,
+                                            color = TextSub
                                         )
-                                        Text(text = "/", fontSize = 10.sp, color = BorderLight)
-                                        Text(text = "キー $keyStr", fontSize = 11.sp, color = TextSub)
-                                        if (song.requestNumber.isNotEmpty()) {
-                                            Text(text = "/", fontSize = 10.sp, color = BorderLight)
-                                            Text(text = "No.${song.requestNumber}", fontSize = 11.sp, color = TextSub)
-                                        }
+                                    }
+                                }
+
+                                Row(
+                                    modifier = Modifier.padding(top = 2.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    if (item.maxScore != null) {
+                                        Text(
+                                            text = "最高: ${String.format("%.3f", item.maxScore)}点",
+                                            fontSize = 11.sp,
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = TextMain
+                                        )
+                                    }
+                                    if (item.singCount > 0) {
+                                        Text(text = "(${item.singCount}回歌唱)", fontSize = 10.sp, color = TextSub)
                                     }
                                 }
                             }
 
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
                                 IconButton(
                                     onClick = { onKeepToggle(song) },
                                     modifier = Modifier.size(32.dp)
                                 ) {
                                     Icon(
-                                        imageVector = if (song.isKept) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-                                        contentDescription = "Keep",
+                                        imageVector = if (song.isKept) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder,
+                                        contentDescription = "キープ",
                                         tint = if (song.isKept) TextMain else IconInactive,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
+
                                 IconButton(
                                     onClick = {
                                         editingSong = song
@@ -363,21 +355,20 @@ fun SearchScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Edit,
-                                        contentDescription = "Edit",
+                                        contentDescription = "編集",
                                         tint = IconInactive,
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }
-                                IconButton(
+
+                                Button(
                                     onClick = { onSingClick(song) },
-                                    modifier = Modifier.size(32.dp)
+                                    colors = ButtonDefaults.buttonColors(containerColor = TextMain, contentColor = BgPrimary),
+                                    shape = RectangleShape,
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                                    modifier = Modifier.height(28.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Mic,
-                                        contentDescription = "Sing",
-                                        tint = TextMain,
-                                        modifier = Modifier.size(18.dp)
-                                    )
+                                    Text("歌う", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                                 }
                             }
                         }
@@ -397,6 +388,7 @@ fun SearchScreen(
         var reqInput by remember { mutableStateOf(target.requestNumber) }
         var damInput by remember { mutableStateOf(target.isDamAvailable) }
         var joyInput by remember { mutableStateOf(target.isJoysoundAvailable) }
+        var stageInput by remember { mutableStateOf(target.stageTag) }
 
         AlertDialog(
             onDismissRequest = { showEditDialog = false },
@@ -429,7 +421,7 @@ fun SearchScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("基準キー: ${if (keyInput >= 0) "+$keyInput" else "$keyInput"}", fontSize = 12.sp, color = TextMain)
+                        Text("基準マイキー: ${if (keyInput >= 0) "+$keyInput" else "$keyInput"}", fontSize = 12.sp, color = TextMain)
                         Row {
                             IconButton(onClick = { keyInput-- }, modifier = Modifier.size(32.dp)) {
                                 Icon(Icons.Default.Remove, contentDescription = "-")
@@ -446,6 +438,33 @@ fun SearchScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    // Stage Tag Selector
+                    Column {
+                        Text("歌唱シーンタグ:", fontSize = 11.sp, color = TextSub)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            listOf(
+                                "" to "未設定",
+                                "WARMUP" to "序盤",
+                                "BEST" to "勝負曲",
+                                "CLIMAX" to "終盤",
+                                "PRACTICE" to "練習中"
+                            ).forEach { (code, label) ->
+                                val isSel = stageInput == code
+                                Box(
+                                    modifier = Modifier
+                                        .clickable { stageInput = code }
+                                        .background(if (isSel) TextMain else BgSecondary)
+                                        .border(1.dp, BorderLight)
+                                        .padding(horizontal = 6.dp, vertical = 3.dp)
+                                ) {
+                                    Text(label, fontSize = 10.sp, color = if (isSel) BgPrimary else TextSub)
+                                }
+                            }
+                        }
+                    }
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -474,7 +493,8 @@ fun SearchScreen(
                                     defaultKey = keyInput,
                                     requestNumber = reqInput.trim(),
                                     isDamAvailable = damInput,
-                                    isJoysoundAvailable = joyInput
+                                    isJoysoundAvailable = joyInput,
+                                    stageTag = stageInput
                                 )
                             )
                             showEditDialog = false

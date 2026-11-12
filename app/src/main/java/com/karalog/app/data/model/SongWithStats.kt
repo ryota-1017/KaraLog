@@ -21,6 +21,7 @@ data class SongWithStats(
     val isJoysoundAvailable: Boolean get() = song.isJoysoundAvailable
     val defaultKey: Int get() = song.defaultKey
     val isKept: Boolean get() = song.isKept
+    val stageTag: String get() = song.stageTag
     val isTrashed: Boolean get() = song.isTrashed
 }
 
