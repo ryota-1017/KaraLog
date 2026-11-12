@@ -243,7 +243,7 @@ fun SettingsScreen(
                 .padding(vertical = 36.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text("KaraLog v1.4.0 · Minimal Karaoke Assistant", fontSize = 11.sp, color = IconInactive)
+            Text("KaraLog v1.5.0 · Minimal Karaoke Assistant", fontSize = 11.sp, color = IconInactive)
         }
     }
 

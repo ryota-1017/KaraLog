@@ -8,9 +8,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.ScreenLockPortrait
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,6 +37,7 @@ fun NowSingingView(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var showListenSheet by remember { mutableStateOf(false) }
 
     // Keep screen on while singing
     DisposableEffect(Unit) {
@@ -118,21 +119,31 @@ fun NowSingingView(
                         modifier = Modifier.padding(top = 4.dp)
                     )
 
-                    if (song != null && song.stageTag.isNotEmpty()) {
-                        val stageLabel = when (song.stageTag) {
-                            "WARMUP" -> "ウォーミングアップ"
-                            "BEST" -> "勝負曲・十八番"
-                            "CLIMAX" -> "終盤盛り上がり"
-                            "PRACTICE" -> "練習中"
-                            else -> song.stageTag
+                    if (song != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        // Listen Music Quick Link Button
+                        Row(
+                            modifier = Modifier
+                                .clickable { showListenSheet = true }
+                                .background(BgPrimary)
+                                .border(1.dp, BorderLight)
+                                .padding(horizontal = 10.dp, vertical = 5.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Headphones,
+                                contentDescription = null,
+                                tint = TextMain,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Text(
+                                text = "原曲を聴く (YT Music / Spotify)",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = TextMain
+                            )
                         }
-                        Text(
-                            text = "# $stageLabel",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = TextSub,
-                            modifier = Modifier.padding(top = 6.dp)
-                        )
                     }
 
                     Spacer(modifier = Modifier.height(14.dp))
@@ -294,5 +305,13 @@ fun NowSingingView(
                 Text("歌唱をキャンセル", fontSize = 12.sp)
             }
         }
+    }
+
+    if (showListenSheet && song != null) {
+        ListenMusicSheet(
+            title = song.title,
+            artist = song.artist,
+            onDismiss = { showListenSheet = false }
+        )
     }
 }

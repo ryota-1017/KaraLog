@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.karalog.app.data.local.entity.SongEntity
 import com.karalog.app.data.model.SongWithStats
+import com.karalog.app.ui.components.ListenMusicSheet
 import com.karalog.app.ui.theme.*
 
 @Composable
@@ -38,6 +39,7 @@ fun SearchScreen(
     var selectedCategory by remember { mutableStateOf(initialCategory) } // ALL, KEPT, WARMUP, BEST, CLIMAX, PRACTICE
     var editingSong by remember { mutableStateOf<SongEntity?>(null) }
     var showEditDialog by remember { mutableStateOf(false) }
+    var listeningSong by remember { mutableStateOf<SongEntity?>(null) }
 
     val filteredSongs = remember(songsWithStats, searchQuery, selectedMachine, selectedCategory) {
         songsWithStats.filter { item ->
@@ -334,6 +336,19 @@ fun SearchScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(2.dp)
                             ) {
+                                // Listen Music Button (YouTube Music / Spotify / YouTube)
+                                IconButton(
+                                    onClick = { listeningSong = song },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Headphones,
+                                        contentDescription = "原曲を聴く",
+                                        tint = TextSub,
+                                        modifier = Modifier.size(17.dp)
+                                    )
+                                }
+
                                 IconButton(
                                     onClick = { onKeepToggle(song) },
                                     modifier = Modifier.size(32.dp)
@@ -377,6 +392,15 @@ fun SearchScreen(
                 }
             }
         }
+    }
+
+    // Listen Music Sheet
+    if (listeningSong != null) {
+        ListenMusicSheet(
+            title = listeningSong!!.title,
+            artist = listeningSong!!.artist,
+            onDismiss = { listeningSong = null }
+        )
     }
 
     // Add / Edit Song Dialog

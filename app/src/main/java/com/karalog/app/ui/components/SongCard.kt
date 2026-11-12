@@ -6,12 +6,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +33,7 @@ fun SongCard(
     modifier: Modifier = Modifier
 ) {
     val song = songWithStats.song
+    var showListenSheet by remember { mutableStateOf(false) }
 
     Row(
         modifier = modifier
@@ -71,7 +74,7 @@ fun SongCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = song.artist,
+                    text = if (song.artist.isNotEmpty()) song.artist else "未設定",
                     fontSize = 12.sp,
                     color = TextSub,
                     maxLines = 1,
@@ -81,16 +84,43 @@ fun SongCard(
             }
         }
 
-        IconButton(
-            onClick = onKeepToggle,
-            modifier = Modifier.size(32.dp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = "Options",
-                tint = TextMain,
-                modifier = Modifier.size(20.dp)
-            )
+            // Listen Music Button (YouTube Music / Spotify)
+            IconButton(
+                onClick = { showListenSheet = true },
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Headphones,
+                    contentDescription = "原曲を聴く",
+                    tint = TextSub,
+                    modifier = Modifier.size(17.dp)
+                )
+            }
+
+            // Keep bookmark button
+            IconButton(
+                onClick = onKeepToggle,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = if (song.isKept) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder,
+                    contentDescription = "キープ",
+                    tint = if (song.isKept) TextMain else IconInactive,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
+    }
+
+    if (showListenSheet) {
+        ListenMusicSheet(
+            title = song.title,
+            artist = song.artist,
+            onDismiss = { showListenSheet = false }
+        )
     }
 }
