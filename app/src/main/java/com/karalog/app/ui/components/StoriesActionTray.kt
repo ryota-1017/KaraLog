@@ -37,9 +37,9 @@ fun StoriesActionTray(
         verticalAlignment = Alignment.CenterVertically
     ) {
         StoryActionItem(icon = Icons.Default.Search, label = "検索", onClick = onSearchClick)
-        StoryActionItem(icon = Icons.Default.Mic, label = "即歌唱", onClick = onSingClick)
+        StoryActionItem(icon = Icons.Default.Mic, label = "フリー歌唱", onClick = onSingClick)
         StoryActionItem(icon = Icons.Default.Schedule, label = "履歴", onClick = onHistoryClick)
-        StoryActionItem(icon = Icons.Default.Add, label = "曲追加", onClick = onAddClick)
+        StoryActionItem(icon = Icons.Default.Add, label = "曲を登録", onClick = onAddClick)
     }
 }
 

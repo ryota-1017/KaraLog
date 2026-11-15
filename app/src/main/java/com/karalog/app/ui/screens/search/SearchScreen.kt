@@ -1,5 +1,6 @@
 ﻿package com.karalog.app.ui.screens.search
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -39,6 +40,8 @@ fun SearchScreen(
     onKeepToggle: (SongEntity) -> Unit,
     onSingClick: (SongEntity) -> Unit,
     onAddOrEditSong: (SongEntity) -> Unit,
+    onAddToQueue: (SongEntity) -> Unit = {},
+    onDeleteSong: (Long) -> Unit = {},
     initialCategory: String = "ALL",
     modifier: Modifier = Modifier
 ) {
@@ -49,6 +52,7 @@ fun SearchScreen(
     var editingSong by remember { mutableStateOf<SongEntity?>(null) }
     var showEditDialog by remember { mutableStateOf(false) }
     var listeningSong by remember { mutableStateOf<SongEntity?>(null) }
+    var songToDelete by remember { mutableStateOf<SongEntity?>(null) }
 
     val filteredSongs = remember(songsWithStats, searchQuery, selectedMachine, selectedCategory) {
         val q = searchQuery.trim().lowercase()
@@ -145,9 +149,8 @@ fun SearchScreen(
                         Surface(
                             shape = CircleShape,
                             color = BgSecondary,
-                            modifier = Modifier
-                                .size(26.dp)
-                                .clickable { searchQuery = "" }
+                            modifier = Modifier.size(26.dp),
+                            onClick = { searchQuery = "" }
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
@@ -173,16 +176,16 @@ fun SearchScreen(
                     shadowElevation = 2.dp,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .border(1.dp, TextMain, RoundedCornerShape(16.dp))
-                        .clickable {
-                            val newSong = if (isSpotify) {
-                                SongEntity(title = "", spotifyUrl = searchQuery.trim())
-                            } else {
-                                SongEntity(title = "", youtubeMusicUrl = searchQuery.trim())
-                            }
-                            editingSong = newSong
-                            showEditDialog = true
+                        .border(1.dp, TextMain, RoundedCornerShape(16.dp)),
+                    onClick = {
+                        val newSong = if (isSpotify) {
+                            SongEntity(title = "", spotifyUrl = searchQuery.trim())
+                        } else {
+                            SongEntity(title = "", youtubeMusicUrl = searchQuery.trim())
                         }
+                        editingSong = newSong
+                        showEditDialog = true
+                    }
                 ) {
                     Row(
                         modifier = Modifier
@@ -198,7 +201,7 @@ fun SearchScreen(
                             color = TextMain
                         )
                         Text(
-                            text = "このリンクで曲を統合登録 ➔",
+                            text = "このリンクで曲を登録 ➔",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextMain
@@ -207,7 +210,7 @@ fun SearchScreen(
                 }
             }
 
-            // Machine Filters & Add Button (Rounded 3D Pills)
+            // Machine Filters & Add Button (Rounded 3D Pills with native onClick!)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -222,9 +225,11 @@ fun SearchScreen(
                             shape = RoundedCornerShape(16.dp),
                             color = if (isSelected) TextMain else CardBg,
                             shadowElevation = if (isSelected) 2.dp else 1.dp,
-                            modifier = Modifier
-                                .border(1.dp, if (isSelected) TextMain else CardBorder, RoundedCornerShape(16.dp))
-                                .clickable { selectedMachine = code }
+                            modifier = Modifier.border(1.dp, if (isSelected) TextMain else CardBorder, RoundedCornerShape(16.dp)),
+                            onClick = {
+                                HapticHelper.playClick(context)
+                                selectedMachine = code
+                            }
                         ) {
                             Text(
                                 text = label,
@@ -241,15 +246,15 @@ fun SearchScreen(
                     shape = RoundedCornerShape(16.dp),
                     color = BgSecondary,
                     shadowElevation = 1.dp,
-                    modifier = Modifier
-                        .border(1.dp, CardBorder, RoundedCornerShape(16.dp))
-                        .clickable {
-                            editingSong = SongEntity(title = searchQuery.trim())
-                            showEditDialog = true
-                        }
+                    modifier = Modifier.border(1.dp, CardBorder, RoundedCornerShape(16.dp)),
+                    onClick = {
+                        HapticHelper.playClick(context)
+                        editingSong = SongEntity(title = searchQuery.trim())
+                        showEditDialog = true
+                    }
                 ) {
                     Text(
-                        text = "+ 新規曲を追加",
+                        text = "+ 新規曲を登録",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextMain,
@@ -258,7 +263,7 @@ fun SearchScreen(
                 }
             }
 
-            // Category & Stage Tags Pills (Rounded 3D Pills)
+            // Category & Stage Tags Pills (Native onClick ensures 100% responsiveness!)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -278,9 +283,11 @@ fun SearchScreen(
                         shape = RoundedCornerShape(14.dp),
                         color = if (isSelected) TextMain else CardBg,
                         shadowElevation = if (isSelected) 2.dp else 1.dp,
-                        modifier = Modifier
-                            .border(1.dp, if (isSelected) TextMain else CardBorder, RoundedCornerShape(14.dp))
-                            .clickable { selectedCategory = code }
+                        modifier = Modifier.border(1.dp, if (isSelected) TextMain else CardBorder, RoundedCornerShape(14.dp)),
+                        onClick = {
+                            HapticHelper.playClick(context)
+                            selectedCategory = code
+                        }
                     ) {
                         Text(
                             text = label,
@@ -294,14 +301,14 @@ fun SearchScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         // Search Results List (Rounded 3D Cards)
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .background(BgPrimary),
-            contentPadding = PaddingValues(bottom = 80.dp)
+            contentPadding = PaddingValues(bottom = 90.dp)
         ) {
             if (filteredSongs.isEmpty()) {
                 item {
@@ -322,12 +329,10 @@ fun SearchScreen(
                                 shape = RoundedCornerShape(22.dp),
                                 color = TextMain,
                                 shadowElevation = 3.dp,
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(22.dp))
-                                    .clickable {
-                                        editingSong = SongEntity(title = searchQuery.trim())
-                                        showEditDialog = true
-                                    }
+                                onClick = {
+                                    editingSong = SongEntity(title = searchQuery.trim())
+                                    showEditDialog = true
+                                }
                             ) {
                                 Text(
                                     text = "「$searchQuery」を新規登録する",
@@ -357,17 +362,21 @@ fun SearchScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 4.dp)
                             .border(1.dp, CardBorder, RoundedCornerShape(18.dp))
-                            .clip(RoundedCornerShape(18.dp))
-                            .clickable { onSongClick(song) }
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                            // Song Info Click Area
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { onSongClick(song) }
+                                    .padding(end = 6.dp)
+                            ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -434,38 +443,18 @@ fun SearchScreen(
                                         }
                                     }
 
-                                    // Machine Available Badges
                                     if (song.isDamAvailable) {
-                                        Surface(
-                                            shape = RoundedCornerShape(4.dp),
-                                            color = BgSecondary
-                                        ) {
-                                            Text(
-                                                text = "DAM",
-                                                fontSize = 8.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = TextSub,
-                                                modifier = Modifier.padding(horizontal = 3.dp, vertical = 1.dp)
-                                            )
+                                        Surface(shape = RoundedCornerShape(4.dp), color = BgSecondary) {
+                                            Text("DAM", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = TextSub, modifier = Modifier.padding(horizontal = 3.dp, vertical = 1.dp))
                                         }
                                     }
                                     if (song.isJoysoundAvailable) {
-                                        Surface(
-                                            shape = RoundedCornerShape(4.dp),
-                                            color = BgSecondary
-                                        ) {
-                                            Text(
-                                                text = "JOY",
-                                                fontSize = 8.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = TextSub,
-                                                modifier = Modifier.padding(horizontal = 3.dp, vertical = 1.dp)
-                                            )
+                                        Surface(shape = RoundedCornerShape(4.dp), color = BgSecondary) {
+                                            Text("JOY", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = TextSub, modifier = Modifier.padding(horizontal = 3.dp, vertical = 1.dp))
                                         }
                                     }
                                 }
 
-                                // Song details: Score + Denmoku + Spotify/YT Music Pills
                                 Row(
                                     modifier = Modifier.padding(top = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically,
@@ -488,32 +477,20 @@ fun SearchScreen(
                                         }
                                     }
 
-                                    // 試聴可能バッジ
                                     if (song.spotifyUrl.isNotEmpty() || song.youtubeMusicUrl.isNotEmpty()) {
                                         Surface(
                                             shape = RoundedCornerShape(8.dp),
                                             color = BgSecondary,
-                                            modifier = Modifier
-                                                .border(0.8.dp, CardBorder, RoundedCornerShape(8.dp))
-                                                .clickable { listeningSong = song }
+                                            modifier = Modifier.border(0.8.dp, CardBorder, RoundedCornerShape(8.dp)),
+                                            onClick = { listeningSong = song }
                                         ) {
                                             Row(
                                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(3.dp)
                                             ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Headphones,
-                                                    contentDescription = null,
-                                                    tint = TextMain,
-                                                    modifier = Modifier.size(11.dp)
-                                                )
-                                                Text(
-                                                    text = "原曲",
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.SemiBold,
-                                                    color = TextMain
-                                                )
+                                                Icon(Icons.Default.Headphones, contentDescription = null, tint = TextMain, modifier = Modifier.size(11.dp))
+                                                Text("原曲", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
                                             }
                                         }
                                     }
@@ -530,19 +507,36 @@ fun SearchScreen(
                                 }
                             }
 
-                            // Right Action Buttons
+                            // Right Action Buttons (Native onClick ensures 100% responsiveness!)
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                // Keep Bookmark Button (3D Circle)
+                                // ＋予約ボタン
+                                Surface(
+                                    shape = CircleShape,
+                                    color = BgSecondary,
+                                    modifier = Modifier.size(32.dp).border(1.dp, CardBorder, CircleShape),
+                                    onClick = {
+                                        HapticHelper.playClick(context)
+                                        onAddToQueue(song)
+                                        Toast.makeText(context, "予約ストックに追加しました", Toast.LENGTH_SHORT).show()
+                                    }
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(Icons.Default.PlaylistAdd, contentDescription = "予約に追加", tint = TextMain, modifier = Modifier.size(17.dp))
+                                    }
+                                }
+
+                                // キープボタン (ブックマーク)
                                 Surface(
                                     shape = CircleShape,
                                     color = if (song.isKept) TextMain else BgSecondary,
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .border(1.dp, if (song.isKept) TextMain else CardBorder, CircleShape)
-                                        .clickable { onKeepToggle(song) }
+                                    modifier = Modifier.size(32.dp).border(1.dp, if (song.isKept) TextMain else CardBorder, CircleShape),
+                                    onClick = {
+                                        HapticHelper.playClick(context)
+                                        onKeepToggle(song)
+                                    }
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
                                         Icon(
@@ -554,48 +548,50 @@ fun SearchScreen(
                                     }
                                 }
 
-                                // Edit Button (3D Circle)
+                                // 編集ボタン
                                 Surface(
                                     shape = CircleShape,
                                     color = BgSecondary,
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .border(1.dp, CardBorder, CircleShape)
-                                        .clickable {
-                                            editingSong = song
-                                            showEditDialog = true
-                                        }
+                                    modifier = Modifier.size(32.dp).border(1.dp, CardBorder, CircleShape),
+                                    onClick = {
+                                        HapticHelper.playClick(context)
+                                        editingSong = song
+                                        showEditDialog = true
+                                    }
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Default.Edit,
-                                            contentDescription = "編集",
-                                            tint = IconInactive,
-                                            modifier = Modifier.size(15.dp)
-                                        )
+                                        Icon(Icons.Default.Edit, contentDescription = "編集", tint = IconInactive, modifier = Modifier.size(15.dp))
                                     }
                                 }
 
-                                // Sing Button (3D Rounded Pill)
+                                // 削除ボタン (ゴミ箱アイコン)
+                                Surface(
+                                    shape = CircleShape,
+                                    color = BgSecondary,
+                                    modifier = Modifier.size(32.dp).border(1.dp, CardBorder, CircleShape),
+                                    onClick = {
+                                        HapticHelper.playClick(context)
+                                        songToDelete = song
+                                    }
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(Icons.Default.DeleteOutline, contentDescription = "曲を削除", tint = IconInactive, modifier = Modifier.size(16.dp))
+                                    }
+                                }
+
+                                // 歌うボタン
                                 Surface(
                                     shape = RoundedCornerShape(14.dp),
                                     color = TextMain,
                                     shadowElevation = 2.dp,
-                                    modifier = Modifier
-                                        .height(30.dp)
-                                        .clip(RoundedCornerShape(14.dp))
-                                        .clickable { onSingClick(song) }
+                                    modifier = Modifier.height(30.dp),
+                                    onClick = {
+                                        HapticHelper.playClick(context)
+                                        onSingClick(song)
+                                    }
                                 ) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier.padding(horizontal = 12.dp)
-                                    ) {
-                                        Text(
-                                            text = "歌う",
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = BgPrimary
-                                        )
+                                    Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 10.dp)) {
+                                        Text("歌う", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BgPrimary)
                                     }
                                 }
                             }
@@ -606,7 +602,7 @@ fun SearchScreen(
         }
     }
 
-    // Listen Music Sheet
+    // 試聴シート
     if (listeningSong != null) {
         ListenMusicSheet(
             title = listeningSong!!.title,
@@ -617,7 +613,37 @@ fun SearchScreen(
         )
     }
 
-    // Add / Edit Song Dialog (Rounded 3D Dialog)
+    // 曲の削除確認ダイアログ
+    if (songToDelete != null) {
+        val s = songToDelete!!
+        AlertDialog(
+            onDismissRequest = { songToDelete = null },
+            shape = RoundedCornerShape(20.dp),
+            title = { Text("曲の削除", fontSize = 15.sp, fontWeight = FontWeight.Bold) },
+            text = { Text("「${s.title}」をライブラリから削除しますか？", fontSize = 13.sp, color = TextSub) },
+            confirmButton = {
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = TextMain,
+                    onClick = {
+                        onDeleteSong(s.id)
+                        songToDelete = null
+                        Toast.makeText(context, "曲を削除しました", Toast.LENGTH_SHORT).show()
+                    }
+                ) {
+                    Text("削除する", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = BgPrimary, modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { songToDelete = null }) {
+                    Text("キャンセル", fontSize = 12.sp, color = TextSub)
+                }
+            },
+            containerColor = CardBg
+        )
+    }
+
+    // 曲の登録・編集ダイアログ
     if (showEditDialog && editingSong != null) {
         val target = editingSong!!
         var titleInput by remember { mutableStateOf(target.title) }
@@ -671,10 +697,8 @@ fun SearchScreen(
                             Surface(
                                 shape = CircleShape,
                                 color = BgSecondary,
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .border(1.dp, CardBorder, CircleShape)
-                                    .clickable { keyInput-- }
+                                modifier = Modifier.size(32.dp).border(1.dp, CardBorder, CircleShape),
+                                onClick = { keyInput-- }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(Icons.Default.Remove, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -694,10 +718,8 @@ fun SearchScreen(
                             Surface(
                                 shape = CircleShape,
                                 color = BgSecondary,
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .border(1.dp, CardBorder, CircleShape)
-                                    .clickable { keyInput++ }
+                                modifier = Modifier.size(32.dp).border(1.dp, CardBorder, CircleShape),
+                                onClick = { keyInput++ }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -757,29 +779,28 @@ fun SearchScreen(
                     shape = RoundedCornerShape(18.dp),
                     color = TextMain,
                     shadowElevation = 2.dp,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(18.dp))
-                        .clickable {
-                            if (titleInput.isNotBlank()) {
-                                onAddOrEditSong(
-                                    target.copy(
-                                        title = titleInput.trim(),
-                                        artist = artistInput.trim(),
-                                        defaultKey = keyInput,
-                                        requestNumber = reqInput.trim(),
-                                        isDamAvailable = damInput,
-                                        isJoysoundAvailable = joyInput,
-                                        stageTag = stageInput,
-                                        spotifyUrl = spotifyInput.trim(),
-                                        youtubeMusicUrl = ytMusicInput.trim()
-                                    )
+                    onClick = {
+                        if (titleInput.isNotBlank()) {
+                            onAddOrEditSong(
+                                target.copy(
+                                    title = titleInput.trim(),
+                                    artist = artistInput.trim(),
+                                    defaultKey = keyInput,
+                                    requestNumber = reqInput.trim(),
+                                    isDamAvailable = damInput,
+                                    isJoysoundAvailable = joyInput,
+                                    stageTag = stageInput,
+                                    spotifyUrl = spotifyInput.trim(),
+                                    youtubeMusicUrl = ytMusicInput.trim()
                                 )
-                                showEditDialog = false
-                            }
+                            )
+                            showEditDialog = false
+                            Toast.makeText(context, "曲を保存しました", Toast.LENGTH_SHORT).show()
                         }
+                    }
                 ) {
                     Text(
-                        text = "1曲に統合して保存",
+                        text = "保存する",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = BgPrimary,

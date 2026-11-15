@@ -62,6 +62,10 @@ class MainViewModel(
     private val _sessionRecords = MutableStateFlow<List<Pair<String, SingingRecordEntity>>>(emptyList())
     val sessionRecords: StateFlow<List<Pair<String, SingingRecordEntity>>> = _sessionRecords.asStateFlow()
 
+    // カラオケ予約ストックリスト（予約キュー）
+    private val _reservedQueue = MutableStateFlow<List<SongEntity>>(emptyList())
+    val reservedQueue: StateFlow<List<SongEntity>> = _reservedQueue.asStateFlow()
+
     private val _themeMode = MutableStateFlow(
         prefs?.getString(KEY_THEME_MODE, "SYSTEM") ?: "SYSTEM"
     )
@@ -108,9 +112,55 @@ class MainViewModel(
     fun finishSession() {
         _isSessionActive.value = false
         _sessionRecords.value = emptyList()
+        _reservedQueue.value = emptyList()
         prefs?.edit()
             ?.putBoolean(KEY_IS_SESSION_ACTIVE, false)
             ?.apply()
+    }
+
+    // ====== 予約キュー（曲ストック＆並び替え） ======
+    fun addToQueue(song: SongEntity) {
+        val current = _reservedQueue.value.toMutableList()
+        if (current.none { it.id == song.id }) {
+            current.add(song)
+            _reservedQueue.value = current
+        }
+    }
+
+    fun removeFromQueue(songId: Long) {
+        _reservedQueue.value = _reservedQueue.value.filter { it.id != songId }
+    }
+
+    fun moveQueueUp(index: Int) {
+        if (index > 0 && index < _reservedQueue.value.size) {
+            val list = _reservedQueue.value.toMutableList()
+            val temp = list[index]
+            list[index] = list[index - 1]
+            list[index - 1] = temp
+            _reservedQueue.value = list
+        }
+    }
+
+    fun moveQueueDown(index: Int) {
+        if (index >= 0 && index < _reservedQueue.value.size - 1) {
+            val list = _reservedQueue.value.toMutableList()
+            val temp = list[index]
+            list[index] = list[index + 1]
+            list[index + 1] = temp
+            _reservedQueue.value = list
+        }
+    }
+
+    fun popNextFromQueue(): SongEntity? {
+        val list = _reservedQueue.value
+        if (list.isEmpty()) return null
+        val next = list.first()
+        _reservedQueue.value = list.drop(1)
+        return next
+    }
+
+    fun clearQueue() {
+        _reservedQueue.value = emptyList()
     }
 
     /**
@@ -224,6 +274,7 @@ class MainViewModel(
     fun deleteSong(songId: Long) {
         viewModelScope.launch {
             repository.deleteSong(songId)
+            removeFromQueue(songId)
         }
     }
 

@@ -6,19 +6,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.karalog.app.data.local.entity.SongEntity
@@ -35,9 +36,15 @@ fun HomeScreen(
     recommendedSongs: List<SongWithStats>,
     keptSongs: List<SongWithStats>,
     rankingRecords: List<SingingRecordWithSong>,
+    reservedQueue: List<SongEntity> = emptyList(),
     onSongClick: (SongEntity) -> Unit,
     onKeepToggle: (SongEntity) -> Unit,
     onSingClick: (SongEntity) -> Unit,
+    onAddToQueue: (SongEntity) -> Unit = {},
+    onMoveQueueUp: (Int) -> Unit = {},
+    onMoveQueueDown: (Int) -> Unit = {},
+    onRemoveFromQueue: (Long) -> Unit = {},
+    onDeleteSong: (Long) -> Unit = {},
     onSearchClick: () -> Unit,
     onBestClick: () -> Unit,
     onAddClick: () -> Unit,
@@ -49,7 +56,7 @@ fun HomeScreen(
         modifier = modifier
             .fillMaxSize()
             .background(BgPrimary),
-        contentPadding = PaddingValues(bottom = 80.dp)
+        contentPadding = PaddingValues(bottom = 90.dp)
     ) {
         // 1. 3D Circular Action Tray
         item {
@@ -59,16 +66,185 @@ fun HomeScreen(
                 onHistoryClick = onBestClick,
                 onAddClick = onAddClick
             )
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(4.dp))
         }
 
-        // 2. 本日のキープ（歌いたい曲）
+        // 2. 🎤 予約ストックリスト（順番入れ替え可能！）
+        if (reservedQueue.isNotEmpty()) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 20.dp, end = 20.dp, top = 10.dp, bottom = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = TextMain,
+                            modifier = Modifier.size(22.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    Icons.Default.QueueMusic,
+                                    contentDescription = null,
+                                    tint = BgPrimary,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                            }
+                        }
+                        Text(
+                            text = "予約ストック (${reservedQueue.size}曲)",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextMain
+                        )
+                    }
+                    Text(
+                        text = "▲▼で順序入れ替え",
+                        fontSize = 11.sp,
+                        color = TextSub
+                    )
+                }
+            }
+
+            itemsIndexed(reservedQueue, key = { _, s -> "queue_${s.id}" }) { index, song ->
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = CardBg,
+                    shadowElevation = 2.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 3.dp)
+                        .border(1.2.dp, CardBorder, RoundedCornerShape(16.dp))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // Order Number badge
+                        Surface(
+                            shape = CircleShape,
+                            color = if (index == 0) TextMain else BgSecondary,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = "${index + 1}",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (index == 0) BgPrimary else TextMain
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        // Title & Artist
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = song.title,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = TextMain,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            if (song.artist.isNotEmpty()) {
+                                Text(
+                                    text = song.artist,
+                                    fontSize = 11.sp,
+                                    color = TextSub,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+
+                        // Reorder and Action Buttons
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            // Move Up
+                            if (index > 0) {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = BgSecondary,
+                                    modifier = Modifier.size(28.dp),
+                                    onClick = { onMoveQueueUp(index) }
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(Icons.Default.KeyboardArrowUp, contentDescription = "上へ", tint = TextMain, modifier = Modifier.size(18.dp))
+                                    }
+                                }
+                            }
+
+                            // Move Down
+                            if (index < reservedQueue.size - 1) {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = BgSecondary,
+                                    modifier = Modifier.size(28.dp),
+                                    onClick = { onMoveQueueDown(index) }
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = "下へ", tint = TextMain, modifier = Modifier.size(18.dp))
+                                    }
+                                }
+                            }
+
+                            // Sing this song button
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = TextMain,
+                                shadowElevation = 1.dp,
+                                modifier = Modifier.height(28.dp),
+                                onClick = {
+                                    onRemoveFromQueue(song.id)
+                                    onSingClick(song)
+                                }
+                            ) {
+                                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 8.dp)) {
+                                    Text("歌う", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BgPrimary)
+                                }
+                            }
+
+                            // Remove from queue button
+                            Surface(
+                                shape = CircleShape,
+                                color = BgSecondary,
+                                modifier = Modifier.size(28.dp),
+                                onClick = { onRemoveFromQueue(song.id) }
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(Icons.Default.Close, contentDescription = "予約解除", tint = IconInactive, modifier = Modifier.size(14.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+
+        // 3. キープ曲（歌いたい曲）
         if (keptSongs.isNotEmpty()) {
             item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 8.dp),
+                        .padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -91,14 +267,14 @@ fun HomeScreen(
                             }
                         }
                         Text(
-                            text = "歌唱候補 (${keptSongs.size})",
+                            text = "キープ曲 (${keptSongs.size}曲)",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextMain
                         )
                     }
                     Text(
-                        text = "タップで即歌唱",
+                        text = "タップで歌唱",
                         fontSize = 11.sp,
                         color = TextSub
                     )
@@ -110,7 +286,9 @@ fun HomeScreen(
                     songWithStats = item,
                     onSongClick = { onSongClick(item.song) },
                     onKeepToggle = { onKeepToggle(item.song) },
-                    onSingClick = { onSingClick(item.song) }
+                    onSingClick = { onSingClick(item.song) },
+                    onAddToQueue = { onAddToQueue(item.song) },
+                    onDeleteSong = { onDeleteSong(item.song.id) }
                 )
             }
 
@@ -119,7 +297,7 @@ fun HomeScreen(
             }
         }
 
-        // 3. オススメ曲 Section
+        // 4. オススメ曲 Section
         item {
             Row(
                 modifier = Modifier
@@ -149,11 +327,13 @@ fun HomeScreen(
                 songWithStats = item,
                 onSongClick = { onSongClick(item.song) },
                 onKeepToggle = { onKeepToggle(item.song) },
-                onSingClick = { onSingClick(item.song) }
+                onSingClick = { onSingClick(item.song) },
+                onAddToQueue = { onAddToQueue(item.song) },
+                onDeleteSong = { onDeleteSong(item.song.id) }
             )
         }
 
-        // 4. 過去のランキング Section
+        // 5. 過去のランキング Section
         item {
             Row(
                 modifier = Modifier

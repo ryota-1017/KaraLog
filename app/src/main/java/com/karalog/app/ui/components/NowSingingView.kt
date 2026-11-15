@@ -86,15 +86,10 @@ fun NowSingingView(
                     ) {
                         Icon(Icons.Default.Mic, contentDescription = null, tint = TextMain, modifier = Modifier.size(15.dp))
                         Text(
-                            text = "歌唱中 / 待機",
+                            text = "歌唱モード",
                             fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
+                            fontWeight = FontWeight.Bold,
                             color = TextMain
-                        )
-                        Text(
-                            text = "· 常時点灯中",
-                            fontSize = 10.sp,
-                            color = TextSub
                         )
                     }
                 }

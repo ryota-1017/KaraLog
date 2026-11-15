@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material3.*
@@ -65,34 +66,41 @@ fun StartScreen(
                 Surface(
                     shape = CircleShape,
                     color = CardBg,
-                    shadowElevation = 4.dp,
+                    shadowElevation = 5.dp,
                     modifier = Modifier
-                        .size(68.dp)
+                        .size(72.dp)
                         .border(1.5.dp, CardBorder, CircleShape)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Outlined.Mic,
+                            imageVector = Icons.Outlined.GraphicEq,
                             contentDescription = null,
                             tint = TextMain,
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(34.dp)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    text = "KaraLog",
-                    fontSize = 30.sp,
-                    fontStyle = FontStyle.Italic,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Serif,
-                    letterSpacing = (-0.5).sp,
-                    color = TextMain
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "KARA",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp,
+                        color = TextMain
+                    )
+                    Text(
+                        text = "·LOG",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Light,
+                        letterSpacing = 2.sp,
+                        color = TextSub
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Surface(
                     shape = RoundedCornerShape(12.dp),

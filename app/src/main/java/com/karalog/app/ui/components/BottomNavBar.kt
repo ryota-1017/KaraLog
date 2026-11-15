@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,6 +36,8 @@ fun BottomNavBar(
     onTabSelected: (BottomTab) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDark = isSystemInDarkTheme()
+
     val tabs = listOf(
         Triple(BottomTab.HOME, Icons.Filled.Home, Icons.Outlined.Home),
         Triple(BottomTab.SEARCH, Icons.Filled.Search, Icons.Outlined.Search),
@@ -43,40 +46,51 @@ fun BottomNavBar(
         Triple(BottomTab.SETTINGS, Icons.Filled.Tune, Icons.Outlined.Tune)
     )
 
-    // True Floating Island Dock with subtle backdrop gradient (not opaque white!)
+    val dockBgColor = if (isDark) Color(0xFF16181D) else Color(0xFFFFFFFF)
+    val dockBorderColor = if (isDark) Color(0x38FFFFFF) else Color(0x1F000000)
+    val dockShadowColor = if (isDark) Color(0x8C000000) else Color(0x26000000)
+    val activeIconColor = if (isDark) Color.White else Color(0xFF16181D)
+    val inactiveIconColor = if (isDark) Color(0xFF8E95A5) else Color(0xFF8A92A0)
+    val activePillBg = if (isDark) Color(0xFF282C35) else Color(0xFFEFF2F6)
+
+    // True Floating Island Dock with subtle transparent backdrop
     Box(
         modifier = modifier
             .fillMaxWidth()
             .background(
                 Brush.verticalGradient(
-                    listOf(
+                    if (isDark) listOf(
                         Color.Transparent,
-                        Color.Black.copy(alpha = 0.08f),
-                        Color.Black.copy(alpha = 0.25f)
+                        Color.Black.copy(alpha = 0.3f),
+                        Color.Black.copy(alpha = 0.85f)
+                    ) else listOf(
+                        Color.Transparent,
+                        Color(0xFFF6F7FA).copy(alpha = 0.3f),
+                        Color(0xFFF6F7FA).copy(alpha = 0.85f)
                     )
                 )
             )
             .navigationBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(horizontal = 20.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
-        // High-contrast 3D Floating Capsule Dock
+        // Floating 3D Capsule Dock
         Surface(
             shape = RoundedCornerShape(32.dp),
-            color = Color(0xFF16181D), // Elegant deep dark pill in both light & dark mode so it truly FLOATS with high contrast
-            shadowElevation = 14.dp,
+            color = dockBgColor,
+            shadowElevation = 10.dp,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(62.dp)
+                .height(60.dp)
                 .shadow(
-                    elevation = 14.dp,
+                    elevation = 10.dp,
                     shape = RoundedCornerShape(32.dp),
-                    ambientColor = Color(0x66000000),
-                    spotColor = Color(0x8C000000)
+                    ambientColor = dockShadowColor,
+                    spotColor = dockShadowColor
                 )
                 .border(
                     width = 1.2.dp,
-                    color = Color(0x38FFFFFF), // Sleek rim highlight
+                    color = dockBorderColor,
                     shape = RoundedCornerShape(32.dp)
                 )
         ) {
@@ -91,11 +105,11 @@ fun BottomNavBar(
                     val isSelected = currentTab == tab
                     val icon = if (isSelected) filledIcon else outlinedIcon
                     val tint by animateColorAsState(
-                        if (isSelected) Color.White else Color(0xFF8E95A5),
+                        if (isSelected) activeIconColor else inactiveIconColor,
                         label = "tabTint"
                     )
                     val pillBg by animateColorAsState(
-                        if (isSelected) Color(0xFF282C35) else Color.Transparent,
+                        if (isSelected) activePillBg else Color.Transparent,
                         label = "tabBg"
                     )
 

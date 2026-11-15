@@ -55,6 +55,7 @@ class MainActivity : ComponentActivity() {
                 val recordsWithSong by viewModel.recordsWithSong.collectAsState()
                 val sessionStartTime by viewModel.sessionStartTime.collectAsState()
                 val sessionRecords by viewModel.sessionRecords.collectAsState()
+                val reservedQueue by viewModel.reservedQueue.collectAsState()
                 val isSessionActive by viewModel.isSessionActive.collectAsState()
                 val autoResetAt3Am by viewModel.autoResetAt3Am.collectAsState()
                 val selectedMachine by viewModel.selectedMachine.collectAsState()
@@ -109,6 +110,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onFinishClick = if (isSessionActive) {
                                     { showFinishDialog = true }
+                                } else null,
+                                onStartClick = if (!isSessionActive && isBrowsingLibrary) {
+                                    { isBrowsingLibrary = false }
                                 } else null
                             )
                         },
@@ -126,6 +130,7 @@ class MainActivity : ComponentActivity() {
                                     recommendedSongs = songsWithStats,
                                     keptSongs = songsWithStats.filter { it.isKept },
                                     rankingRecords = recordsWithSong,
+                                    reservedQueue = reservedQueue,
                                     onSongClick = { song ->
                                         activeSingingSong = song
                                         currentKeyOffset = song.defaultKey
@@ -139,15 +144,25 @@ class MainActivity : ComponentActivity() {
                                         currentKeyOffset = song.defaultKey
                                         currentTab = BottomTab.SING
                                     },
+                                    onAddToQueue = { song ->
+                                        viewModel.addToQueue(song)
+                                    },
+                                    onMoveQueueUp = { index ->
+                                        viewModel.moveQueueUp(index)
+                                    },
+                                    onMoveQueueDown = { index ->
+                                        viewModel.moveQueueDown(index)
+                                    },
+                                    onRemoveFromQueue = { songId ->
+                                        viewModel.removeFromQueue(songId)
+                                    },
+                                    onDeleteSong = { songId ->
+                                        viewModel.deleteSong(songId)
+                                    },
                                     onSearchClick = { currentTab = BottomTab.SEARCH },
                                     onBestClick = { currentTab = BottomTab.SEARCH },
                                     onAddClick = {
-                                        val newNum = songsWithStats.size + 1
-                                        viewModel.quickAddAndGetSong("新規楽曲 " + newNum) { song ->
-                                            activeSingingSong = song
-                                            currentKeyOffset = 0
-                                            currentTab = BottomTab.SING
-                                        }
+                                        currentTab = BottomTab.SEARCH
                                     }
                                 )
 
@@ -168,6 +183,12 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onAddOrEditSong = { song ->
                                         viewModel.saveSong(song)
+                                    },
+                                    onAddToQueue = { song ->
+                                        viewModel.addToQueue(song)
+                                    },
+                                    onDeleteSong = { songId ->
+                                        viewModel.deleteSong(songId)
                                     }
                                 )
 
