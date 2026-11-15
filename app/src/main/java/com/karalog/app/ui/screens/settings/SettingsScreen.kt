@@ -30,6 +30,7 @@ fun SettingsScreen(
     currentThemeMode: String = "SYSTEM",
     onThemeModeChange: (String) -> Unit = {},
     onResetSession: () -> Unit,
+    onSeedPopularSongs: () -> Unit = {},
     onResetAllData: () -> Unit,
     onExportJson: suspend () -> String,
     onImportJson: suspend (String) -> Boolean,
@@ -142,14 +143,33 @@ fun SettingsScreen(
         }
         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
 
-        // Section: Data & Backup
+        // Section: Data & Library
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(BgSecondary)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Text("データ管理 ＆ バックアップ", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMain)
+            Text("ライブラリ ＆ バックアップ", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMain)
+        }
+        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
+
+        // Seed Popular Ranking Songs
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    onSeedPopularSongs()
+                }
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text("カラオケ人気定番曲 (35曲) を一括追加", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextMain)
+                Text("怪獣の花唄、ドライフラワー、残酷な天使のテーゼ等の人気曲を登録", fontSize = 11.sp, color = TextSub, modifier = Modifier.padding(top = 2.dp))
+            }
+            Text("追加", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMain)
         }
         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
 
@@ -243,7 +263,7 @@ fun SettingsScreen(
                 .padding(vertical = 36.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text("KaraLog v1.6.0 · Minimal Karaoke Assistant", fontSize = 11.sp, color = IconInactive)
+            Text("KaraLog v1.7.0 · Minimal Karaoke Assistant", fontSize = 11.sp, color = IconInactive)
         }
     }
 
@@ -260,7 +280,7 @@ fun SettingsScreen(
                         value = importInput,
                         onValueChange = { importInput = it },
                         modifier = Modifier.fillMaxWidth().height(120.dp),
-                        placeholder = { Text("{\"version\":\"1.4.0\"...}", fontSize = 10.sp) }
+                        placeholder = { Text("{\"version\":\"1.7.0\"...}", fontSize = 10.sp) }
                     )
                 }
             },

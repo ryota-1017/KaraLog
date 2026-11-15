@@ -34,8 +34,22 @@ class MainViewModel(private val repository: KaraLogRepository) : ViewModel() {
     private val _themeMode = MutableStateFlow("SYSTEM") // "SYSTEM", "DARK", "LIGHT"
     val themeMode: StateFlow<String> = _themeMode.asStateFlow()
 
+    init {
+        // Automatically ensure popular ranking songs are seeded on launch / update
+        viewModelScope.launch {
+            repository.seedPopularSongsIfNeeded(force = false)
+        }
+    }
+
     fun setThemeMode(mode: String) {
         _themeMode.value = mode
+    }
+
+    fun seedPopularRankingSongs(onDone: (Int) -> Unit = {}) {
+        viewModelScope.launch {
+            val count = repository.seedPopularSongsIfNeeded(force = true)
+            onDone(count)
+        }
     }
 
     fun recordScore(

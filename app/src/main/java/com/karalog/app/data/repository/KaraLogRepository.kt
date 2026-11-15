@@ -2,6 +2,7 @@
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.karalog.app.data.local.PopularSongsSeed
 import com.karalog.app.data.local.dao.SingingRecordDao
 import com.karalog.app.data.local.dao.SongDao
 import com.karalog.app.data.local.entity.SingingRecordEntity
@@ -61,6 +62,21 @@ class KaraLogRepository(
     suspend fun updateSong(song: SongEntity) = songDao.updateSong(song)
     suspend fun toggleKeptStatus(songId: Long, currentKept: Boolean) = songDao.updateKeptStatus(songId, !currentKept)
     suspend fun updateDefaultKey(songId: Long, key: Int) = songDao.updateDefaultKey(songId, key)
+
+    suspend fun seedPopularSongsIfNeeded(force: Boolean = false): Int {
+        val currentSongs = songsFlow.first()
+        if (!force && currentSongs.size >= 15) return 0
+
+        var addedCount = 0
+        PopularSongsSeed.POPULAR_RANKING_SONGS.forEach { seedSong ->
+            val existing = songDao.getSongByTitleAndArtist(seedSong.title, seedSong.artist)
+            if (existing == null) {
+                songDao.insertSong(seedSong)
+                addedCount++
+            }
+        }
+        return addedCount
+    }
 
     suspend fun saveOrMergeSong(song: SongEntity): SongEntity {
         val trimmedTitle = song.title.trim()
@@ -145,7 +161,7 @@ class KaraLogRepository(
         val songs = songsFlow.first()
         val records = recordsFlow.first()
         val map = mapOf(
-            "version" to "1.5.0",
+            "version" to "1.7.0",
             "songs" to songs,
             "records" to records
         )

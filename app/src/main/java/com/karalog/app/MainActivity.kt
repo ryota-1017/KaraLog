@@ -162,6 +162,11 @@ class MainActivity : ComponentActivity() {
                                 onResetSession = {
                                     viewModel.resetSession()
                                 },
+                                onSeedPopularSongs = {
+                                    viewModel.seedPopularRankingSongs { added ->
+                                        android.widget.Toast.makeText(this@MainActivity, "カラオケ人気曲をライブラリに追加しました (${added}曲)", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                },
                                 onResetAllData = {
                                     viewModel.resetAllData()
                                     activeSingingSong = null
