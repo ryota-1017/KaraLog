@@ -6,16 +6,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,137 +26,229 @@ import com.karalog.app.util.HapticHelper
 
 @Composable
 fun StartScreen(
+    initialMachine: String = "DAM (精密採点Ai)",
     onStartSession: (machine: String) -> Unit,
+    onSkipToLibrary: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var selectedMachine by remember { mutableStateOf("DAM (\u7cbe\u5bc6\u63a1\u70b9Ai)") }
+    var selectedMachine by remember { mutableStateOf(initialMachine) }
 
     val machines = listOf(
-        "DAM (\u7cbe\u5bc6\u63a1\u70b9Ai)",
-        "DAM (\u7cbe\u5bc6\u63a1\u70b9DX-G)",
-        "JOYSOUND (\u5206\u6790\u63a1\u70b9Ai)",
-        "JOYSOUND (\u5206\u6790\u63a1\u70b9MAX)"
+        "DAM (精密採点Ai)" to "DAMの最新Ai採点・繊細な表現力判定",
+        "DAM (精密採点DX-G)" to "定番DX-G・ボーナス点＆安定した音程判定",
+        "JOYSOUND (分析採点Ai)" to "JOYSOUND最新Ai・高音域＆ロングトーン分析",
+        "JOYSOUND (分析採点MAX)" to "テンポの速い曲やボカロ曲・MAXシリーズ"
     )
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MidnightBlack)
-            .padding(24.dp)
+            .background(BgPrimary)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(horizontal = 24.dp, vertical = 20.dp)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(vertical = 16.dp),
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
+            // Header & Branding
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(top = 20.dp)
+                modifier = Modifier.padding(top = 24.dp)
             ) {
                 Box(
                     modifier = Modifier
-                        .size(68.dp)
-                        .clip(RoundedCornerShape(22.dp))
-                        .background(Brush.linearGradient(listOf(NeonCyan, VibrantBlue))),
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(BgSecondary)
+                        .border(1.dp, BorderLight, RoundedCornerShape(16.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Mic, contentDescription = null, tint = MidnightBlack, modifier = Modifier.size(36.dp))
+                    Icon(
+                        imageVector = Icons.Outlined.Mic,
+                        contentDescription = null,
+                        tint = TextMain,
+                        modifier = Modifier.size(28.dp)
+                    )
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
                     text = "KaraLog",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color.White
+                    fontSize = 28.sp,
+                    fontStyle = FontStyle.Italic,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Serif,
+                    letterSpacing = (-0.5).sp,
+                    color = TextMain
                 )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
                 Text(
-                    text = "\u4eca\u65e5\u306e\u30ab\u30e9\u30aa\u30b1\u3092\u306f\u3058\u3081\u307e\u3057\u3087\u3046",
-                    fontSize = 14.sp,
-                    color = Color(0xFF90A4AE)
+                    text = "START KARAOKE SESSION",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 2.sp,
+                    color = TextSub
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "本日のカラオケ機種を選んでスタート",
+                    fontSize = 13.sp,
+                    color = TextSub
                 )
             }
 
+            // Machine Selection List
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    text = "\u6a5f\u7a2e\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044",
-                    fontSize = 14.sp,
+                    text = "カラオケ機種を選択",
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = TextSub,
+                    modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
                 )
 
-                machines.forEach { machine ->
-                    val isSelected = selectedMachine == machine
-                    val isDam = machine.contains("DAM")
-                    val accentColor = if (isDam) NeonCyan else VibrantPurple
+                machines.forEach { (machineName, desc) ->
+                    val isSelected = selectedMachine == machineName
+                    val isDam = machineName.contains("DAM")
 
-                    Surface(
-                        shape = RoundedCornerShape(18.dp),
-                        color = if (isSelected) SurfaceVariantDark else SurfaceDark,
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .background(if (isSelected) BgSecondary else BgPrimary)
                             .border(
-                                width = if (isSelected) 2.dp else 1.dp,
-                                color = if (isSelected) accentColor else OutlineDark,
-                                shape = RoundedCornerShape(18.dp)
+                                width = if (isSelected) 1.5.dp else 1.dp,
+                                color = if (isSelected) TextMain else BorderLight,
+                                shape = RoundedCornerShape(10.dp)
                             )
+                            .clip(RoundedCornerShape(10.dp))
                             .clickable {
                                 HapticHelper.playClick(context)
-                                selectedMachine = machine
+                                selectedMachine = machineName
                             }
+                            .padding(horizontal = 16.dp, vertical = 14.dp)
                     ) {
                         Row(
-                            modifier = Modifier.padding(18.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(10.dp)
-                                        .clip(RoundedCornerShape(5.dp))
-                                        .background(accentColor)
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    // Machine Type Tag
+                                    Box(
+                                        modifier = Modifier
+                                            .background(if (isSelected) TextMain else BgSecondary)
+                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    ) {
+                                        Text(
+                                            text = if (isDam) "DAM" else "JOY",
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isSelected) BgPrimary else TextSub
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = machineName,
+                                        fontSize = 14.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                        color = TextMain
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(3.dp))
                                 Text(
-                                    text = machine,
-                                    fontSize = 15.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = Color.White
+                                    text = desc,
+                                    fontSize = 11.sp,
+                                    color = TextSub
                                 )
                             }
-                            RadioButton(
-                                selected = isSelected,
-                                onClick = {
-                                    HapticHelper.playClick(context)
-                                    selectedMachine = machine
-                                },
-                                colors = RadioButtonDefaults.colors(selectedColor = accentColor)
-                            )
+
+                            // Selection Indicator
+                            Box(
+                                modifier = Modifier
+                                    .size(22.dp)
+                                    .clip(RoundedCornerShape(11.dp))
+                                    .background(if (isSelected) TextMain else BgSecondary)
+                                    .border(
+                                        1.dp,
+                                        if (isSelected) TextMain else BorderLight,
+                                        RoundedCornerShape(11.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (isSelected) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Check,
+                                        contentDescription = null,
+                                        tint = BgPrimary,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            Button(
-                onClick = {
-                    HapticHelper.playHeavyClick(context)
-                    onStartSession(selectedMachine)
-                },
-                shape = RoundedCornerShape(18.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = NeonCyan, contentColor = MidnightBlack),
+            // Bottom Actions: Start Button & Skip
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
+                    .padding(bottom = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(24.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("\u30ab\u30e9\u30aa\u30b1\u3092\u958b\u59cb\u3059\u308b", fontSize = 17.sp, fontWeight = FontWeight.Black)
+                Button(
+                    onClick = {
+                        HapticHelper.playHeavyClick(context)
+                        onStartSession(selectedMachine)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TextMain,
+                        contentColor = BgPrimary
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "カラオケを開始する (Start Karaoke)",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                TextButton(
+                    onClick = {
+                        HapticHelper.playClick(context)
+                        onSkipToLibrary()
+                    }
+                ) {
+                    Text(
+                        text = "開始せずにライブラリを閲覧",
+                        fontSize = 12.sp,
+                        color = TextSub
+                    )
+                }
             }
         }
     }

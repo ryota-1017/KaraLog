@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.StopCircle
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,6 +22,7 @@ import com.karalog.app.ui.theme.*
 @Composable
 fun HeaderBar(
     onFilterClick: () -> Unit,
+    onFinishClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -59,16 +61,37 @@ fun HeaderBar(
                 )
             }
 
-            IconButton(
-                onClick = onFilterClick,
-                modifier = Modifier.size(36.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.Tune,
-                    contentDescription = "Filter",
-                    tint = TextMain,
-                    modifier = Modifier.size(22.dp)
-                )
+                // カラオケFinish（終了）ロゴ（設定ロゴの左隣）
+                if (onFinishClick != null) {
+                    IconButton(
+                        onClick = onFinishClick,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.StopCircle,
+                            contentDescription = "Finish Karaoke",
+                            tint = TextMain,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+
+                // 設定ロゴ
+                IconButton(
+                    onClick = onFilterClick,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Tune,
+                        contentDescription = "Settings",
+                        tint = TextMain,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
         }
 

@@ -27,6 +27,8 @@ fun SettingsScreen(
     totalRecordsCount: Int,
     currentDefaultMachine: String,
     onDefaultMachineChange: (String) -> Unit,
+    autoResetAt3Am: Boolean = true,
+    onAutoResetChange: (Boolean) -> Unit = {},
     currentThemeMode: String = "SYSTEM",
     onThemeModeChange: (String) -> Unit = {},
     onResetSession: () -> Unit,
@@ -123,13 +125,47 @@ fun SettingsScreen(
         }
         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
 
+        // 3:00 AM Auto Reset Toggle
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+                Text("深夜3時の自動セッションリセット", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextMain)
+                Text(
+                    "深夜3時を過ぎると、カラオケセッションを自動終了して初期の「Start Karaoke」画面に戻します（退室忘れ防止）",
+                    fontSize = 11.sp,
+                    color = TextSub,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+            Switch(
+                checked = autoResetAt3Am,
+                onCheckedChange = { isChecked ->
+                    onAutoResetChange(isChecked)
+                    val msg = if (isChecked) "深夜3時自動リセットを有効にしました" else "深夜3時自動リセットを無効にしました"
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = BgPrimary,
+                    checkedTrackColor = TextMain,
+                    uncheckedThumbColor = TextSub,
+                    uncheckedTrackColor = BgSecondary
+                )
+            )
+        }
+        Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
+
         // Session Reset
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
                     onResetSession()
-                    Toast.makeText(context, "今日のセッション記録をリセットしました", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "今日のセッション記録を終了しました", Toast.LENGTH_SHORT).show()
                 }
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -137,9 +173,9 @@ fun SettingsScreen(
         ) {
             Column {
                 Text("今日のカラオケセッションを終了", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextMain)
-                Text("本日の歌唱履歴を締め切り、新しい入室を開始します", fontSize = 11.sp, color = TextSub, modifier = Modifier.padding(top = 2.dp))
+                Text("本日の歌唱履歴を締め切り、初期画面に戻ります", fontSize = 11.sp, color = TextSub, modifier = Modifier.padding(top = 2.dp))
             }
-            Text("リセット", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMain)
+            Text("終了", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMain)
         }
         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
 
@@ -263,7 +299,7 @@ fun SettingsScreen(
                 .padding(vertical = 36.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text("KaraLog v1.7.0 · Minimal Karaoke Assistant", fontSize = 11.sp, color = IconInactive)
+            Text("KaraLog v1.8.0 · Minimal Karaoke Assistant", fontSize = 11.sp, color = IconInactive)
         }
     }
 
@@ -280,7 +316,7 @@ fun SettingsScreen(
                         value = importInput,
                         onValueChange = { importInput = it },
                         modifier = Modifier.fillMaxWidth().height(120.dp),
-                        placeholder = { Text("{\"version\":\"1.7.0\"...}", fontSize = 10.sp) }
+                        placeholder = { Text("{\"version\":\"1.8.0\"...}", fontSize = 10.sp) }
                     )
                 }
             },
