@@ -11,6 +11,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.karalog.app.data.local.entity.SongEntity
@@ -111,19 +112,13 @@ class MainActivity : ComponentActivity() {
                                 } else null
                             )
                         },
-                        bottomBar = {
-                            BottomNavBar(
-                                currentTab = currentTab,
-                                onTabSelected = { currentTab = it }
-                            )
-                        },
                         contentWindowInsets = WindowInsets(0, 0, 0, 0),
                         containerColor = BgPrimary
                     ) { innerPadding ->
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(innerPadding)
+                                .padding(top = innerPadding.calculateTopPadding())
                                 .background(BgPrimary)
                         ) {
                             when (currentTab) {
@@ -292,6 +287,13 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                             }
+
+                            // 真のフローティング・アイランドナビゲーション（背後にコンテンツが回り込み、宙に浮かぶ）
+                            BottomNavBar(
+                                currentTab = currentTab,
+                                onTabSelected = { currentTab = it },
+                                modifier = Modifier.align(Alignment.BottomCenter)
+                            )
 
                             // カラオケFinish（終了確認）ダイアログ
                             if (showFinishDialog) {

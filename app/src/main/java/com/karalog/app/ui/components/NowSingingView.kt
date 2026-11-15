@@ -378,7 +378,7 @@ fun NowSingingView(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 60.dp),
+                .padding(bottom = 90.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Surface(

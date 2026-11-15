@@ -19,6 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.karalog.app.ui.theme.*
 
@@ -40,40 +43,65 @@ fun BottomNavBar(
         Triple(BottomTab.SETTINGS, Icons.Filled.Tune, Icons.Outlined.Tune)
     )
 
+    // True Floating Island Dock with subtle backdrop gradient (not opaque white!)
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(BgPrimary)
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        Color.Transparent,
+                        Color.Black.copy(alpha = 0.08f),
+                        Color.Black.copy(alpha = 0.25f)
+                    )
+                )
+            )
             .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 20.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Floating 3D Rounded Island Dock
+        // High-contrast 3D Floating Capsule Dock
         Surface(
             shape = RoundedCornerShape(32.dp),
-            color = CardBg,
-            shadowElevation = 4.dp,
+            color = Color(0xFF16181D), // Elegant deep dark pill in both light & dark mode so it truly FLOATS with high contrast
+            shadowElevation = 14.dp,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(60.dp)
-                .border(1.2.dp, CardBorder, RoundedCornerShape(32.dp))
+                .height(62.dp)
+                .shadow(
+                    elevation = 14.dp,
+                    shape = RoundedCornerShape(32.dp),
+                    ambientColor = Color(0x66000000),
+                    spotColor = Color(0x8C000000)
+                )
+                .border(
+                    width = 1.2.dp,
+                    color = Color(0x38FFFFFF), // Sleek rim highlight
+                    shape = RoundedCornerShape(32.dp)
+                )
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 8.dp),
+                    .padding(horizontal = 10.dp),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 tabs.forEach { (tab, filledIcon, outlinedIcon) ->
                     val isSelected = currentTab == tab
                     val icon = if (isSelected) filledIcon else outlinedIcon
-                    val tint by animateColorAsState(if (isSelected) TextMain else IconInactive, label = "tabTint")
-                    val pillBg by animateColorAsState(if (isSelected) BgSecondary else CardBg, label = "tabBg")
+                    val tint by animateColorAsState(
+                        if (isSelected) Color.White else Color(0xFF8E95A5),
+                        label = "tabTint"
+                    )
+                    val pillBg by animateColorAsState(
+                        if (isSelected) Color(0xFF282C35) else Color.Transparent,
+                        label = "tabBg"
+                    )
 
                     Box(
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(46.dp)
                             .clip(CircleShape)
                             .background(pillBg)
                             .clickable(
