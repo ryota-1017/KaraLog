@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Close
@@ -32,15 +34,18 @@ fun ListenMusicSheet(
     val context = LocalContext.current
 
     Dialog(onDismissRequest = onDismiss) {
-        Box(
+        Surface(
+            shape = RoundedCornerShape(26.dp),
+            color = CardBg,
+            shadowElevation = 8.dp,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(BgPrimary)
-                .border(1.dp, BorderLight)
-                .padding(20.dp)
+                .border(1.2.dp, CardBorder, RoundedCornerShape(26.dp))
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 // Header
@@ -51,189 +56,239 @@ fun ListenMusicSheet(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(
-                            Icons.Default.Headphones,
-                            contentDescription = null,
-                            tint = TextMain,
-                            modifier = Modifier.size(16.dp)
-                        )
+                        Surface(
+                            shape = CircleShape,
+                            color = BgSecondary,
+                            modifier = Modifier.size(28.dp).border(0.8.dp, CardBorder, CircleShape)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    Icons.Default.Headphones,
+                                    contentDescription = null,
+                                    tint = TextMain,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                            }
+                        }
                         Text(
-                            text = "原曲を聴く (1曲に統合)",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = TextMain,
-                            letterSpacing = 1.sp
+                            text = "原曲を聴く",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextMain
                         )
                     }
 
-                    IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.size(24.dp)
+                    Surface(
+                        shape = CircleShape,
+                        color = BgSecondary,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clickable { onDismiss() }
                     ) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = IconInactive,
-                            modifier = Modifier.size(16.dp)
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Close",
+                                tint = IconInactive,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
                 }
 
-                // Song Info
-                Column(
+                // Song Info (Rounded 3D Card)
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = BgSecondary,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(BgSecondary)
-                        .padding(12.dp)
+                        .border(1.dp, CardBorder, RoundedCornerShape(16.dp))
                 ) {
-                    Text(
-                        text = title,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextMain,
-                        maxLines = 1
-                    )
-                    if (artist.isNotEmpty()) {
+                    Column(modifier = Modifier.padding(14.dp)) {
                         Text(
-                            text = artist,
-                            fontSize = 12.sp,
-                            color = TextSub,
-                            modifier = Modifier.padding(top = 2.dp)
+                            text = title,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextMain,
+                            maxLines = 1
                         )
+                        if (artist.isNotEmpty()) {
+                            Text(
+                                text = artist,
+                                fontSize = 12.sp,
+                                color = TextSub,
+                                modifier = Modifier.padding(top = 2.dp)
+                            )
+                        }
                     }
                 }
 
-                // 2つの音楽サービス（Spotify & YouTube Music）が1つの曲としてまとまっている
+                // 3 Music Service Rounded 3D Buttons
                 Column(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     // 1. YouTube Music
-                    Row(
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = CardBg,
+                        shadowElevation = 2.dp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(BgSecondary)
-                            .border(1.dp, BorderLight)
+                            .border(1.dp, CardBorder, RoundedCornerShape(16.dp))
                             .clickable {
                                 HapticHelper.playClick(context)
                                 IntentHelper.openYouTubeMusic(context, title, artist, youtubeMusicUrl)
                                 onDismiss()
                             }
-                            .padding(horizontal = 14.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(
-                                    text = "YouTube Music",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = TextMain
-                                )
-                                if (youtubeMusicUrl.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     Text(
-                                        text = "登録リンク済",
-                                        fontSize = 10.sp,
-                                        color = TextSub
+                                        text = "YouTube Music",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = TextMain
                                     )
+                                    if (youtubeMusicUrl.isNotEmpty()) {
+                                        Surface(
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = BgSecondary
+                                        ) {
+                                            Text(
+                                                text = "登録リンク済",
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = TextSub,
+                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                            )
+                                        }
+                                    }
                                 }
+                                Text(
+                                    text = "YouTube Music アプリまたはWebで聴く",
+                                    fontSize = 10.sp,
+                                    color = TextSub
+                                )
                             }
-                            Text(
-                                text = "YouTube Music アプリまたはWebで聴く",
-                                fontSize = 10.sp,
-                                color = TextSub
+                            Icon(
+                                Icons.AutoMirrored.Filled.OpenInNew,
+                                contentDescription = null,
+                                tint = TextSub,
+                                modifier = Modifier.size(15.dp)
                             )
                         }
-                        Icon(
-                            Icons.AutoMirrored.Filled.OpenInNew,
-                            contentDescription = null,
-                            tint = TextSub,
-                            modifier = Modifier.size(14.dp)
-                        )
                     }
 
                     // 2. Spotify
-                    Row(
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = CardBg,
+                        shadowElevation = 2.dp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(BgSecondary)
-                            .border(1.dp, BorderLight)
+                            .border(1.dp, CardBorder, RoundedCornerShape(16.dp))
                             .clickable {
                                 HapticHelper.playClick(context)
                                 IntentHelper.openSpotify(context, title, artist, spotifyUrl)
                                 onDismiss()
                             }
-                            .padding(horizontal = 14.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(
-                                    text = "Spotify",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = TextMain
-                                )
-                                if (spotifyUrl.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                     Text(
-                                        text = "登録リンク済",
-                                        fontSize = 10.sp,
-                                        color = TextSub
+                                        text = "Spotify",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = TextMain
                                     )
+                                    if (spotifyUrl.isNotEmpty()) {
+                                        Surface(
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = BgSecondary
+                                        ) {
+                                            Text(
+                                                text = "登録リンク済",
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = TextSub,
+                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                            )
+                                        }
+                                    }
                                 }
+                                Text(
+                                    text = "Spotify アプリまたはWebで聴く",
+                                    fontSize = 10.sp,
+                                    color = TextSub
+                                )
                             }
-                            Text(
-                                text = "Spotify アプリまたはWebで聴く",
-                                fontSize = 10.sp,
-                                color = TextSub
+                            Icon(
+                                Icons.AutoMirrored.Filled.OpenInNew,
+                                contentDescription = null,
+                                tint = TextSub,
+                                modifier = Modifier.size(15.dp)
                             )
                         }
-                        Icon(
-                            Icons.AutoMirrored.Filled.OpenInNew,
-                            contentDescription = null,
-                            tint = TextSub,
-                            modifier = Modifier.size(14.dp)
-                        )
                     }
 
                     // 3. YouTube (Official MV / Live)
-                    Row(
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = CardBg,
+                        shadowElevation = 2.dp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(BgSecondary)
-                            .border(1.dp, BorderLight)
+                            .border(1.dp, CardBorder, RoundedCornerShape(16.dp))
                             .clickable {
                                 HapticHelper.playClick(context)
                                 IntentHelper.openYouTube(context, title, artist)
                                 onDismiss()
                             }
-                            .padding(horizontal = 14.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
-                            Text(
-                                text = "YouTube (MV / 動画)",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = TextMain
-                            )
-                            Text(
-                                text = "公式MVやライブ動画でメロディを確認",
-                                fontSize = 10.sp,
-                                color = TextSub
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "YouTube (MV / 動画)",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextMain
+                                )
+                                Text(
+                                    text = "公式MVやライブ動画でメロディを確認",
+                                    fontSize = 10.sp,
+                                    color = TextSub
+                                )
+                            }
+                            Icon(
+                                Icons.AutoMirrored.Filled.OpenInNew,
+                                contentDescription = null,
+                                tint = TextSub,
+                                modifier = Modifier.size(15.dp)
                             )
                         }
-                        Icon(
-                            Icons.AutoMirrored.Filled.OpenInNew,
-                            contentDescription = null,
-                            tint = TextSub,
-                            modifier = Modifier.size(14.dp)
-                        )
                     }
                 }
             }

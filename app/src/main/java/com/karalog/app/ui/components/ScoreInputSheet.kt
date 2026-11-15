@@ -10,6 +10,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
@@ -21,7 +23,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -78,195 +80,273 @@ fun ScoreInputSheet(
 
     fun onKey(char: String) {
         HapticHelper.playClick(context)
-        if (char == "BS") {
-            if (input.isNotEmpty()) input = input.dropLast(1)
-            return
-        }
-        if (char == "." && input.contains(".")) return
-        if (input.length >= 6) return
-
-        val next = input + char
-        if (next.length == 3 && !next.contains(".")) {
-            input = next.substring(0, 2) + "." + next.substring(2)
-        } else {
-            input = next
-        }
-    }
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(BgPrimary)
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("採点スコア入力", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // OCR Camera Button
-                IconButton(
-                    onClick = { imagePickerLauncher.launch("image/*") },
-                    modifier = Modifier.size(28.dp)
-                ) {
-                    Icon(Icons.Default.CameraAlt, contentDescription = "OCR採点読取", tint = TextMain, modifier = Modifier.size(18.dp))
-                }
-
-                IconButton(onClick = onDismiss, modifier = Modifier.size(24.dp)) {
-                    Icon(Icons.Default.Close, contentDescription = "Close", tint = IconInactive, modifier = Modifier.size(18.dp))
+        when (char) {
+            "BS" -> {
+                if (input.isNotEmpty()) {
+                    input = input.dropLast(1)
                 }
             }
-        }
-
-        Text(
-            text = songTitle,
-            fontSize = 11.sp,
-            color = TextSub,
-            maxLines = 1,
-            modifier = Modifier.padding(top = 2.dp, bottom = 10.dp)
-        )
-
-        // Main Score Display (Monospace tabular typography)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(BgSecondary)
-                .padding(vertical = 14.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            if (isOcrProcessing) {
-                CircularProgressIndicator(color = TextMain, modifier = Modifier.size(28.dp), strokeWidth = 2.dp)
-            } else {
-                Text(
-                    text = if (input.isEmpty()) "00.000" else input,
-                    fontSize = 34.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Monospace,
-                    color = if (input.isEmpty()) TextSub else TextMain,
-                    letterSpacing = 1.sp
-                )
+            "." -> {
+                if (!input.contains(".") && input.isNotEmpty()) {
+                    input += "."
+                }
             }
-        }
+            else -> {
+                val parts = input.split(".")
+                val integerPart = parts[0]
+                val decimalPart = if (parts.size > 1) parts[1] else null
 
-        // Camera OCR Quick Bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-                .clickable { imagePickerLauncher.launch("image/*") },
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(Icons.Default.CameraAlt, contentDescription = null, tint = TextSub, modifier = Modifier.size(14.dp))
-            Spacer(modifier = Modifier.width(4.dp))
-            Text("採点画面のスクショ/写真から自動読取", fontSize = 11.sp, color = TextSub)
-        }
-
-        // Keypad
-        val keys = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "BS")
-        keys.chunked(3).forEach { row ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                row.forEach { k ->
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(44.dp)
-                            .background(BgSecondary)
-                            .clickable { onKey(k) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (k == "BS") {
-                            Icon(Icons.AutoMirrored.Filled.Backspace, contentDescription = "BS", tint = TextMain, modifier = Modifier.size(18.dp))
-                        } else {
-                            Text(text = k, fontSize = 16.sp, fontWeight = FontWeight.Medium, fontFamily = FontFamily.Monospace, color = TextMain)
-                        }
+                if (decimalPart != null) {
+                    if (decimalPart.length < 3) {
+                        input += char
+                    }
+                } else {
+                    if (integerPart.length < 2) {
+                        input += char
+                    } else if (integerPart.length == 2 && char == "0" && integerPart == "10") {
+                        input += char
+                    } else if (input.length == 2) {
+                        input += ".$char"
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(6.dp))
         }
+    }
 
-        // Detail Parameters Accordion
-        Row(
+    Surface(
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        color = CardBg,
+        shadowElevation = 10.dp,
+        modifier = modifier
+            .fillMaxWidth()
+            .border(1.2.dp, CardBorder, RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 6.dp)
-                .clickable { isDetailExpanded = !isDetailExpanded },
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Text("詳細パラメータ（音程正確率・メモ）", fontSize = 11.sp, color = TextSub)
-            Icon(
-                if (isDetailExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                contentDescription = null,
-                tint = TextSub,
-                modifier = Modifier.size(16.dp)
-            )
-        }
-
-        AnimatedVisibility(visible = isDetailExpanded) {
-            Column(
+            // Drag handle pill
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(BgSecondary)
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(bottom = 12.dp),
+                contentAlignment = Alignment.Center
             ) {
-                OutlinedTextField(
-                    value = pitchInput,
-                    onValueChange = { if (it.length <= 5) pitchInput = it },
-                    label = { Text("音程正確率 (%)", fontSize = 10.sp) },
-                    placeholder = { Text("例: 89.2", fontSize = 11.sp) },
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = TextMain,
-                        unfocusedBorderColor = BorderLight
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = notesInput,
-                    onValueChange = { notesInput = it },
-                    label = { Text("歌唱メモ (ビブラート・キー感触など)", fontSize = 10.sp) },
-                    placeholder = { Text("例: ビブラート重視、サビの高音安定", fontSize = 11.sp) },
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = TextMain,
-                        unfocusedBorderColor = BorderLight
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Surface(
+                    shape = RoundedCornerShape(3.dp),
+                    color = CardBorder,
+                    modifier = Modifier.size(width = 36.dp, height = 4.dp)
+                ) {}
             }
-        }
 
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Button(
-            onClick = {
-                val score = input.toDoubleOrNull()
-                if (score != null && score in 0.0..100.0) {
-                    val pitch = pitchInput.toDoubleOrNull()
-                    HapticHelper.playSuccess(context)
-                    onScoreSubmit(score, pitch, notesInput)
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(text = "スコアを入力", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextMain)
+                    Text(text = songTitle, fontSize = 12.sp, color = TextSub)
                 }
-            },
-            enabled = input.isNotEmpty(),
-            colors = ButtonDefaults.buttonColors(containerColor = TextMain, contentColor = BgPrimary),
-            shape = RectangleShape,
-            modifier = Modifier.fillMaxWidth().height(44.dp)
-        ) {
-            Text("スコアを確定して記録", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Surface(
+                    shape = CircleShape,
+                    color = BgSecondary,
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clickable { onDismiss() }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.Close, contentDescription = "Close", tint = IconInactive, modifier = Modifier.size(16.dp))
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Score Display (Rounded 3D Display)
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = BgSecondary,
+                shadowElevation = 2.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, CardBorder, RoundedCornerShape(20.dp))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isOcrProcessing) {
+                        CircularProgressIndicator(color = TextMain, modifier = Modifier.size(28.dp), strokeWidth = 2.dp)
+                    } else {
+                        Text(
+                            text = if (input.isEmpty()) "00.000" else input,
+                            fontSize = 36.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                            color = if (input.isEmpty()) TextSub else TextMain,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
+            }
+
+            // Camera OCR Quick Pill Bar
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = CardBg,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp)
+                    .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
+                    .clickable { imagePickerLauncher.launch("image/*") }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.CameraAlt, contentDescription = null, tint = TextMain, modifier = Modifier.size(15.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("採点画面のスクショ/写真から自動読取", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
+                }
+            }
+
+            // Keypad (Rounded 3D Tactile Keys)
+            val keys = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "BS")
+            keys.chunked(3).forEach { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    row.forEach { k ->
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = BgSecondary,
+                            shadowElevation = 1.5.dp,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(46.dp)
+                                .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
+                                .clickable { onKey(k) }
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                if (k == "BS") {
+                                    Icon(Icons.AutoMirrored.Filled.Backspace, contentDescription = "BS", tint = TextMain, modifier = Modifier.size(18.dp))
+                                } else {
+                                    Text(
+                                        text = k,
+                                        fontSize = 17.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily.Monospace,
+                                        color = TextMain
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            // Detail Parameters Accordion (Rounded Pill)
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = CardBg,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+                    .border(0.8.dp, CardBorder, RoundedCornerShape(14.dp))
+                    .clickable { isDetailExpanded = !isDetailExpanded }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("詳細パラメータ（音程正確率・メモ）", fontSize = 11.sp, fontWeight = FontWeight.Medium, color = TextSub)
+                    Icon(
+                        if (isDetailExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = null,
+                        tint = TextSub,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            AnimatedVisibility(visible = isDetailExpanded) {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = BgSecondary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp)
+                        .border(1.dp, CardBorder, RoundedCornerShape(16.dp))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = pitchInput,
+                            onValueChange = { if (it.length <= 5) pitchInput = it },
+                            label = { Text("音程正確率 (%)", fontSize = 10.sp) },
+                            placeholder = { Text("例: 89.2", fontSize = 11.sp) },
+                            singleLine = true,
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        OutlinedTextField(
+                            value = notesInput,
+                            onValueChange = { notesInput = it },
+                            label = { Text("歌唱メモ (ビブラート・キー感触など)", fontSize = 10.sp) },
+                            placeholder = { Text("例: ビブラート重視、サビの高音安定", fontSize = 11.sp) },
+                            singleLine = true,
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Surface(
+                shape = RoundedCornerShape(22.dp),
+                color = if (input.isNotEmpty()) TextMain else BgSecondary,
+                shadowElevation = if (input.isNotEmpty()) 3.dp else 0.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(22.dp))
+                    .clickable(enabled = input.isNotEmpty()) {
+                        val score = input.toDoubleOrNull()
+                        if (score != null && score in 0.0..100.0) {
+                            val pitch = pitchInput.toDoubleOrNull()
+                            HapticHelper.playSuccess(context)
+                            onScoreSubmit(score, pitch, notesInput)
+                        }
+                    }
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "スコアを確定して記録",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (input.isNotEmpty()) BgPrimary else IconInactive
+                    )
+                }
+            }
         }
     }
 }

@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Headphones
@@ -15,7 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -72,43 +74,65 @@ fun NowSingingView(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = CardBg,
+                    modifier = Modifier.border(0.8.dp, CardBorder, RoundedCornerShape(14.dp))
                 ) {
-                    Icon(Icons.Default.Mic, contentDescription = null, tint = TextMain, modifier = Modifier.size(16.dp))
-                    Text(
-                        text = "歌唱中 / 待機",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = TextMain
-                    )
-                    Text(
-                        text = "· 常時点灯中",
-                        fontSize = 11.sp,
-                        color = TextSub
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(Icons.Default.Mic, contentDescription = null, tint = TextMain, modifier = Modifier.size(15.dp))
+                        Text(
+                            text = "歌唱中 / 待機",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = TextMain
+                        )
+                        Text(
+                            text = "· 常時点灯中",
+                            fontSize = 10.sp,
+                            color = TextSub
+                        )
+                    }
                 }
 
-                Text(
-                    text = "曲を変更",
-                    fontSize = 12.sp,
-                    color = TextSub,
-                    modifier = Modifier.clickable { onSongChangeClick() }
-                )
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = BgSecondary,
+                    modifier = Modifier
+                        .border(0.8.dp, CardBorder, RoundedCornerShape(14.dp))
+                        .clickable { onSongChangeClick() }
+                ) {
+                    Text(
+                        text = "曲を変更 ➔",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = TextSub,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
+                }
             }
 
-            // 楽曲情報カード (1曲として統合された情報)
-            Box(
+            // 楽曲情報カード (3D Rounded Card)
+            Surface(
+                shape = RoundedCornerShape(22.dp),
+                color = CardBg,
+                shadowElevation = 3.dp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(BgSecondary)
-                    .padding(16.dp)
+                    .border(1.dp, CardBorder, RoundedCornerShape(22.dp))
             ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp)
+                ) {
                     Text(
                         text = song?.title ?: "フリー歌唱",
-                        fontSize = 20.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextMain,
                         maxLines = 2
@@ -122,52 +146,66 @@ fun NowSingingView(
                     )
 
                     if (song != null) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        // Spotify & YouTube Music Integrated Quick Buttons on 1 Song
+                        Spacer(modifier = Modifier.height(12.dp))
+                        // Spotify & YouTube Music Rounded 3D Pills
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
+                            Surface(
+                                shape = RoundedCornerShape(14.dp),
+                                color = BgSecondary,
                                 modifier = Modifier
+                                    .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
                                     .clickable {
                                         HapticHelper.playClick(context)
                                         IntentHelper.openSpotify(context, song.title, song.artist, song.spotifyUrl)
                                     }
-                                    .background(BgPrimary)
-                                    .border(1.dp, BorderLight)
-                                    .padding(horizontal = 10.dp, vertical = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                Text("▶ Spotify", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
+                                Text(
+                                    text = "▶ Spotify",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = TextMain,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                )
                             }
 
-                            Row(
+                            Surface(
+                                shape = RoundedCornerShape(14.dp),
+                                color = BgSecondary,
                                 modifier = Modifier
+                                    .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
                                     .clickable {
                                         HapticHelper.playClick(context)
                                         IntentHelper.openYouTubeMusic(context, song.title, song.artist, song.youtubeMusicUrl)
                                     }
-                                    .background(BgPrimary)
-                                    .border(1.dp, BorderLight)
-                                    .padding(horizontal = 10.dp, vertical = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                Text("▶ YT Music", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
+                                Text(
+                                    text = "▶ YT Music",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = TextMain,
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                )
                             }
 
-                            IconButton(
-                                onClick = { showListenSheet = true },
-                                modifier = Modifier.size(28.dp)
+                            Surface(
+                                shape = CircleShape,
+                                color = BgSecondary,
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .border(1.dp, CardBorder, CircleShape)
+                                    .clickable { showListenSheet = true }
                             ) {
-                                Icon(Icons.Default.Headphones, contentDescription = "詳細試聴", tint = TextSub, modifier = Modifier.size(16.dp))
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(Icons.Default.Headphones, contentDescription = "詳細試聴", tint = TextSub, modifier = Modifier.size(16.dp))
+                                }
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
                         text = "デンモク予約番号",
@@ -177,75 +215,96 @@ fun NowSingingView(
                     )
 
                     val reqNumber = song?.requestNumber?.ifEmpty { null } ?: "-"
-                    Text(
-                        text = reqNumber,
-                        fontSize = 34.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace,
-                        color = TextMain,
-                        letterSpacing = 2.sp
-                    )
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = BgSecondary,
+                        modifier = Modifier
+                            .padding(top = 4.dp)
+                            .border(0.8.dp, CardBorder, RoundedCornerShape(12.dp))
+                    ) {
+                        Text(
+                            text = reqNumber,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                            color = TextMain,
+                            letterSpacing = 2.sp,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            // 機種選択
-            Column(
+            // 機種選択 (Rounded 3D Segmented Card)
+            Surface(
+                shape = RoundedCornerShape(18.dp),
+                color = CardBg,
+                shadowElevation = 2.dp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(BgSecondary)
-                    .padding(14.dp)
+                    .border(1.dp, CardBorder, RoundedCornerShape(18.dp))
             ) {
-                Text(
-                    text = "カラオケ機種",
-                    fontSize = 11.sp,
-                    color = TextSub,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = "カラオケ機種",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = TextSub,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    listOf("DAM", "JOYSOUND").forEach { machine ->
-                        val isSelected = selectedMachine.contains(machine)
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(38.dp)
-                                .background(if (isSelected) TextMain else BgPrimary)
-                                .border(1.dp, BorderLight)
-                                .clickable { onMachineChange(machine) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = machine,
-                                fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                color = if (isSelected) BgPrimary else TextMain
-                            )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("DAM", "JOYSOUND").forEach { machine ->
+                            val isSelected = selectedMachine.contains(machine)
+                            Surface(
+                                shape = RoundedCornerShape(14.dp),
+                                color = if (isSelected) TextMain else BgSecondary,
+                                shadowElevation = if (isSelected) 2.dp else 0.dp,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(40.dp)
+                                    .border(1.dp, if (isSelected) TextMain else CardBorder, RoundedCornerShape(14.dp))
+                                    .clickable { onMachineChange(machine) }
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = machine,
+                                        fontSize = 13.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (isSelected) BgPrimary else TextMain
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            // キー微調整
-            Column(
+            // キー微調整 (3D Rounded Controller)
+            Surface(
+                shape = RoundedCornerShape(18.dp),
+                color = CardBg,
+                shadowElevation = 2.dp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(BgSecondary)
-                    .padding(14.dp)
+                    .border(1.dp, CardBorder, RoundedCornerShape(18.dp))
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(text = "キー設定", fontSize = 11.sp, color = TextSub)
+                        Text(text = "キー設定", fontSize = 11.sp, fontWeight = FontWeight.Medium, color = TextSub)
                         if (song != null) {
                             val defaultKeyStr = when {
                                 song.defaultKey == 0 -> "±0"
@@ -254,8 +313,9 @@ fun NowSingingView(
                             }
                             Text(
                                 text = "登録マイキー: $defaultKeyStr",
-                                fontSize = 10.sp,
-                                color = TextSub
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = TextMain
                             )
                         }
                     }
@@ -264,66 +324,101 @@ fun NowSingingView(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        IconButton(
-                            onClick = { onKeyChange(currentKey - 1) },
+                        Surface(
+                            shape = CircleShape,
+                            color = BgSecondary,
+                            shadowElevation = 2.dp,
                             modifier = Modifier
-                                .size(34.dp)
-                                .background(BgPrimary)
-                                .border(1.dp, BorderLight)
+                                .size(38.dp)
+                                .border(1.dp, CardBorder, CircleShape)
+                                .clickable { onKeyChange(currentKey - 1) }
                         ) {
-                            Icon(Icons.Default.Remove, contentDescription = "-", tint = TextMain, modifier = Modifier.size(16.dp))
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(Icons.Default.Remove, contentDescription = "-", tint = TextMain, modifier = Modifier.size(18.dp))
+                            }
                         }
 
-                        Text(
-                            text = keyStr,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily.Monospace,
-                            color = TextMain,
-                            modifier = Modifier.widthIn(min = 36.dp),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
-
-                        IconButton(
-                            onClick = { onKeyChange(currentKey + 1) },
-                            modifier = Modifier
-                                .size(34.dp)
-                                .background(BgPrimary)
-                                .border(1.dp, BorderLight)
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = BgSecondary,
+                            modifier = Modifier.border(0.8.dp, CardBorder, RoundedCornerShape(10.dp))
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = "+", tint = TextMain, modifier = Modifier.size(16.dp))
+                            Text(
+                                text = keyStr,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace,
+                                color = TextMain,
+                                modifier = Modifier
+                                    .widthIn(min = 44.dp)
+                                    .padding(vertical = 4.dp),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+
+                        Surface(
+                            shape = CircleShape,
+                            color = BgSecondary,
+                            shadowElevation = 2.dp,
+                            modifier = Modifier
+                                .size(38.dp)
+                                .border(1.dp, CardBorder, CircleShape)
+                                .clickable { onKeyChange(currentKey + 1) }
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(Icons.Default.Add, contentDescription = "+", tint = TextMain, modifier = Modifier.size(18.dp))
+                            }
                         }
                     }
                 }
             }
         }
 
-        // 下部アクションボタン
+        // 下部アクションボタン (Rounded 3D Action Buttons)
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 60.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Button(
-                onClick = onInputScoreClick,
-                colors = ButtonDefaults.buttonColors(containerColor = TextMain, contentColor = BgPrimary),
-                shape = RectangleShape,
+            Surface(
+                shape = RoundedCornerShape(26.dp),
+                color = TextMain,
+                shadowElevation = 4.dp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
+                    .height(52.dp)
+                    .clip(RoundedCornerShape(26.dp))
+                    .clickable { onInputScoreClick() }
             ) {
-                Text("歌い終わった！スコアを入力", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "歌い終わった！スコアを入力",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = BgPrimary
+                    )
+                }
             }
 
-            OutlinedButton(
-                onClick = onCancelClick,
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = TextSub),
-                border = androidx.compose.foundation.BorderStroke(1.dp, BorderLight),
-                shape = RectangleShape,
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = CardBg,
+                shadowElevation = 1.dp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(40.dp)
+                    .height(42.dp)
+                    .border(1.dp, CardBorder, RoundedCornerShape(20.dp))
+                    .clickable { onCancelClick() }
             ) {
-                Text("歌唱をキャンセル", fontSize = 12.sp)
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "歌唱をキャンセル",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = TextSub
+                    )
+                }
             }
         }
     }

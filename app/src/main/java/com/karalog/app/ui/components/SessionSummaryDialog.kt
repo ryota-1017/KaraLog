@@ -2,10 +2,11 @@ package com.karalog.app.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.StopCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -14,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,11 +36,12 @@ fun SessionSummaryDialog(
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = BgPrimary,
+            shape = RoundedCornerShape(26.dp),
+            color = CardBg,
+            shadowElevation = 8.dp,
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, BorderLight, RoundedCornerShape(16.dp))
+                .border(1.2.dp, CardBorder, RoundedCornerShape(26.dp))
         ) {
             Column(
                 modifier = Modifier
@@ -49,27 +50,29 @@ fun SessionSummaryDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Header Icon
-                Box(
+                // Header Circular 3D Icon
+                Surface(
+                    shape = CircleShape,
+                    color = BgSecondary,
+                    shadowElevation = 3.dp,
                     modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(BgSecondary)
-                        .border(1.dp, BorderLight, RoundedCornerShape(14.dp)),
-                    contentAlignment = Alignment.Center
+                        .size(54.dp)
+                        .border(1.2.dp, CardBorder, CircleShape)
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.StopCircle,
-                        contentDescription = null,
-                        tint = TextMain,
-                        modifier = Modifier.size(26.dp)
-                    )
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Outlined.StopCircle,
+                            contentDescription = null,
+                            tint = TextMain,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "本日のカラオケを終了",
-                        fontSize = 18.sp,
+                        fontSize = 19.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextMain
                     )
@@ -81,34 +84,39 @@ fun SessionSummaryDialog(
                     )
                 }
 
-                // Summary Stats Box
-                Box(
+                // Summary Stats Box (Rounded 3D Card)
+                Surface(
+                    shape = RoundedCornerShape(18.dp),
+                    color = BgSecondary,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(BgSecondary)
-                        .border(1.dp, BorderLight, RoundedCornerShape(10.dp))
-                        .clip(RoundedCornerShape(10.dp))
-                        .padding(16.dp)
+                        .border(1.dp, CardBorder, RoundedCornerShape(18.dp))
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text("歌唱曲数", fontSize = 12.sp, color = TextSub)
-                            Text("$count 曲", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextMain)
+                            Text("$count 曲", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextMain)
                         }
 
                         if (count > 0) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text("平均スコア", fontSize = 12.sp, color = TextSub)
                                 Text(
                                     String.format("%.1f 点", avgScore),
-                                    fontSize = 13.sp,
+                                    fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace,
                                     color = TextMain
                                 )
                             }
@@ -119,7 +127,7 @@ fun SessionSummaryDialog(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(1.dp)
-                                    .background(BorderLight)
+                                    .background(CardBorder)
                             )
                             Column {
                                 Text("本日の最高得点曲", fontSize = 11.sp, color = TextSub)
@@ -137,55 +145,71 @@ fun SessionSummaryDialog(
                                         modifier = Modifier.weight(1f)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = String.format("%.3f 点", maxRecord.second.score),
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = TextMain
-                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = CardBg,
+                                        modifier = Modifier.border(0.8.dp, CardBorder, RoundedCornerShape(8.dp))
+                                    ) {
+                                        Text(
+                                            text = String.format("%.3f 点", maxRecord.second.score),
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            fontFamily = FontFamily.Monospace,
+                                            color = TextMain,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                // Buttons
+                // Rounded 3D Buttons
                 Column(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Button(
-                        onClick = {
-                            HapticHelper.playHeavyClick(context)
-                            onFinishSession()
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = TextMain,
-                            contentColor = BgPrimary
-                        ),
-                        shape = RoundedCornerShape(8.dp),
+                    Surface(
+                        shape = RoundedCornerShape(22.dp),
+                        color = TextMain,
+                        shadowElevation = 3.dp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(46.dp)
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(22.dp))
+                            .clickable {
+                                HapticHelper.playHeavyClick(context)
+                                onFinishSession()
+                            }
                     ) {
-                        Text(
-                            text = "カラオケを終了する (Finish)",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "カラオケを終了する (Finish)",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BgPrimary
+                            )
+                        }
                     }
 
-                    TextButton(
-                        onClick = onDismiss,
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = CardBg,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(40.dp)
+                            .height(42.dp)
+                            .border(1.dp, CardBorder, RoundedCornerShape(20.dp))
+                            .clickable { onDismiss() }
                     ) {
-                        Text(
-                            text = "まだ続ける (キャンセル)",
-                            fontSize = 12.sp,
-                            color = TextSub
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "まだ続ける (キャンセル)",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = TextSub
+                            )
+                        }
                     }
                 }
             }

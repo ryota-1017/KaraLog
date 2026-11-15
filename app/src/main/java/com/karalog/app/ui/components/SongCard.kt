@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
@@ -11,7 +12,7 @@ import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,83 +36,110 @@ fun SongCard(
     val song = songWithStats.song
     var showListenSheet by remember { mutableStateOf(false) }
 
-    Row(
+    Surface(
+        shape = RoundedCornerShape(18.dp),
+        color = CardBg,
+        shadowElevation = 2.dp,
         modifier = modifier
             .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .border(1.dp, CardBorder, RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(18.dp))
             .clickable { onSongClick() }
-            .padding(horizontal = 16.dp, vertical = 9.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(
-            modifier = Modifier.weight(1f).padding(end = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(BgSecondary)
-                    .border(0.8.dp, BorderLight, RoundedCornerShape(4.dp)),
-                contentAlignment = Alignment.Center
+            Row(
+                modifier = Modifier.weight(1f).padding(end = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.MusicNote,
-                    contentDescription = null,
-                    tint = IconInactive,
-                    modifier = Modifier.size(20.dp)
-                )
+                // Rounded 3D Thumbnail
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = BgSecondary,
+                    shadowElevation = 1.dp,
+                    modifier = Modifier
+                        .size(46.dp)
+                        .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.MusicNote,
+                            contentDescription = null,
+                            tint = IconInactive,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = song.title,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextMain,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = if (song.artist.isNotEmpty()) song.artist else "未設定",
+                        fontSize = 12.sp,
+                        color = TextSub,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = song.title,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = TextMain,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = if (song.artist.isNotEmpty()) song.artist else "未設定",
-                    fontSize = 12.sp,
-                    color = TextSub,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 1.dp)
-                )
-            }
-        }
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            // Listen Music Button (YouTube Music / Spotify)
-            IconButton(
-                onClick = { showListenSheet = true },
-                modifier = Modifier.size(32.dp)
+            // Right Round Pill Buttons
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Headphones,
-                    contentDescription = "原曲を聴く",
-                    tint = TextSub,
-                    modifier = Modifier.size(17.dp)
-                )
-            }
+                // Listen Music Button (Circular 3D)
+                Surface(
+                    shape = CircleShape,
+                    color = BgSecondary,
+                    modifier = Modifier
+                        .size(34.dp)
+                        .border(1.dp, CardBorder, CircleShape)
+                        .clickable { showListenSheet = true }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Headphones,
+                            contentDescription = "原曲を聴く",
+                            tint = TextSub,
+                            modifier = Modifier.size(17.dp)
+                        )
+                    }
+                }
 
-            // Keep bookmark button
-            IconButton(
-                onClick = onKeepToggle,
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = if (song.isKept) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder,
-                    contentDescription = "キープ",
-                    tint = if (song.isKept) TextMain else IconInactive,
-                    modifier = Modifier.size(18.dp)
-                )
+                // Keep Bookmark Button (Circular 3D)
+                Surface(
+                    shape = CircleShape,
+                    color = if (song.isKept) TextMain else BgSecondary,
+                    modifier = Modifier
+                        .size(34.dp)
+                        .border(1.dp, if (song.isKept) TextMain else CardBorder, CircleShape)
+                        .clickable { onKeepToggle() }
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = if (song.isKept) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder,
+                            contentDescription = "キープ",
+                            tint = if (song.isKept) BgPrimary else IconInactive,
+                            modifier = Modifier.size(17.dp)
+                        )
+                    }
+                }
             }
         }
     }

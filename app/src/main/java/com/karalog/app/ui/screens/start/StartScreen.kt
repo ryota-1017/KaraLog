@@ -3,7 +3,9 @@ package com.karalog.app.ui.screens.start
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
@@ -14,7 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -32,6 +34,7 @@ fun StartScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val isDark = isSystemInDarkTheme()
     var selectedMachine by remember { mutableStateOf(initialMachine) }
 
     val machines = listOf(
@@ -47,39 +50,41 @@ fun StartScreen(
             .background(BgPrimary)
             .statusBarsPadding()
             .navigationBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 20.dp)
+            .padding(horizontal = 20.dp, vertical = 18.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Header & Branding
+            // Header & Branding (Rounded & Dimensional)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(top = 24.dp)
+                modifier = Modifier.padding(top = 18.dp)
             ) {
-                Box(
+                Surface(
+                    shape = CircleShape,
+                    color = CardBg,
+                    shadowElevation = 4.dp,
                     modifier = Modifier
-                        .size(56.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(BgSecondary)
-                        .border(1.dp, BorderLight, RoundedCornerShape(16.dp)),
-                    contentAlignment = Alignment.Center
+                        .size(68.dp)
+                        .border(1.5.dp, CardBorder, CircleShape)
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Mic,
-                        contentDescription = null,
-                        tint = TextMain,
-                        modifier = Modifier.size(28.dp)
-                    )
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Outlined.Mic,
+                            contentDescription = null,
+                            tint = TextMain,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 Text(
                     text = "KaraLog",
-                    fontSize = 28.sp,
+                    fontSize = 30.sp,
                     fontStyle = FontStyle.Italic,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Serif,
@@ -89,15 +94,22 @@ fun StartScreen(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                Text(
-                    text = "START KARAOKE SESSION",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
-                    color = TextSub
-                )
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = BgSecondary,
+                    modifier = Modifier.border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+                ) {
+                    Text(
+                        text = "START KARAOKE SESSION",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.5.sp,
+                        color = TextSub,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
                     text = "本日のカラオケ機種を選んでスタート",
@@ -106,7 +118,7 @@ fun StartScreen(
                 )
             }
 
-            // Machine Selection List
+            // Machine Selection (Soft 3D Rounded Cards)
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -116,47 +128,51 @@ fun StartScreen(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextSub,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+                    modifier = Modifier.padding(start = 6.dp, bottom = 2.dp)
                 )
 
                 machines.forEach { (machineName, desc) ->
                     val isSelected = selectedMachine == machineName
                     val isDam = machineName.contains("DAM")
 
-                    Box(
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (isSelected) SurfaceElevated else CardBg,
+                        shadowElevation = if (isSelected) 5.dp else 2.dp,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(if (isSelected) BgSecondary else BgPrimary)
                             .border(
-                                width = if (isSelected) 1.5.dp else 1.dp,
-                                color = if (isSelected) TextMain else BorderLight,
-                                shape = RoundedCornerShape(10.dp)
+                                width = if (isSelected) 2.dp else 1.dp,
+                                color = if (isSelected) TextMain else CardBorder,
+                                shape = RoundedCornerShape(20.dp)
                             )
-                            .clip(RoundedCornerShape(10.dp))
+                            .clip(RoundedCornerShape(20.dp))
                             .clickable {
                                 HapticHelper.playClick(context)
                                 selectedMachine = machineName
                             }
-                            .padding(horizontal = 16.dp, vertical = 14.dp)
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    // Machine Type Tag
-                                    Box(
-                                        modifier = Modifier
-                                            .background(if (isSelected) TextMain else BgSecondary)
-                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    // Machine Type Pill
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = if (isSelected) TextMain else BgSecondary,
+                                        modifier = Modifier.border(0.8.dp, CardBorder, RoundedCornerShape(8.dp))
                                     ) {
                                         Text(
                                             text = if (isDam) "DAM" else "JOY",
                                             fontSize = 9.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = if (isSelected) BgPrimary else TextSub
+                                            color = if (isSelected) BgPrimary else TextSub,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(8.dp))
@@ -167,7 +183,7 @@ fun StartScreen(
                                         color = TextMain
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(3.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = desc,
                                     fontSize = 11.sp,
@@ -175,26 +191,24 @@ fun StartScreen(
                                 )
                             }
 
-                            // Selection Indicator
-                            Box(
+                            // Selection Indicator Circle
+                            Surface(
+                                shape = CircleShape,
+                                color = if (isSelected) TextMain else BgSecondary,
+                                shadowElevation = if (isSelected) 2.dp else 0.dp,
                                 modifier = Modifier
-                                    .size(22.dp)
-                                    .clip(RoundedCornerShape(11.dp))
-                                    .background(if (isSelected) TextMain else BgSecondary)
-                                    .border(
-                                        1.dp,
-                                        if (isSelected) TextMain else BorderLight,
-                                        RoundedCornerShape(11.dp)
-                                    ),
-                                contentAlignment = Alignment.Center
+                                    .size(24.dp)
+                                    .border(1.dp, if (isSelected) TextMain else CardBorder, CircleShape)
                             ) {
-                                if (isSelected) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Check,
-                                        contentDescription = null,
-                                        tint = BgPrimary,
-                                        modifier = Modifier.size(14.dp)
-                                    )
+                                Box(contentAlignment = Alignment.Center) {
+                                    if (isSelected) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Check,
+                                            contentDescription = null,
+                                            tint = BgPrimary,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -202,46 +216,54 @@ fun StartScreen(
                 }
             }
 
-            // Bottom Actions: Start Button & Skip
+            // Bottom Actions: 3D Rounded Start Button
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp),
+                    .padding(bottom = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Button(
-                    onClick = {
-                        HapticHelper.playHeavyClick(context)
-                        onStartSession(selectedMachine)
-                    },
+                Surface(
+                    shape = RoundedCornerShape(28.dp),
+                    color = TextMain,
+                    shadowElevation = 5.dp,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = TextMain,
-                        contentColor = BgPrimary
-                    ),
-                    shape = RoundedCornerShape(10.dp)
+                        .height(54.dp)
+                        .clip(RoundedCornerShape(28.dp))
+                        .clickable {
+                            HapticHelper.playHeavyClick(context)
+                            onStartSession(selectedMachine)
+                        }
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.PlayArrow,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "カラオケを開始する (Start Karaoke)",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.PlayArrow,
+                            contentDescription = null,
+                            tint = BgPrimary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "カラオケを開始する (Start Karaoke)",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BgPrimary
+                        )
+                    }
                 }
 
                 TextButton(
                     onClick = {
                         HapticHelper.playClick(context)
                         onSkipToLibrary()
-                    }
+                    },
+                    shape = RoundedCornerShape(20.dp)
                 ) {
                     Text(
                         text = "開始せずにライブラリを閲覧",

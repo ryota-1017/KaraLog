@@ -1,6 +1,5 @@
 ﻿package com.karalog.app.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,12 +10,15 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.karalog.app.ui.theme.*
 
 @Composable
@@ -30,36 +32,51 @@ fun StoriesActionTray(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 14.dp, horizontal = 16.dp),
+            .padding(vertical = 12.dp, horizontal = 16.dp),
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        StoryCircleItem(icon = Icons.Default.Search, onClick = onSearchClick)
-        StoryCircleItem(icon = Icons.Default.Mic, onClick = onSingClick)
-        StoryCircleItem(icon = Icons.Default.Schedule, onClick = onHistoryClick)
-        StoryCircleItem(icon = Icons.Default.Add, onClick = onAddClick)
+        StoryActionItem(icon = Icons.Default.Search, label = "検索", onClick = onSearchClick)
+        StoryActionItem(icon = Icons.Default.Mic, label = "即歌唱", onClick = onSingClick)
+        StoryActionItem(icon = Icons.Default.Schedule, label = "履歴", onClick = onHistoryClick)
+        StoryActionItem(icon = Icons.Default.Add, label = "曲追加", onClick = onAddClick)
     }
 }
 
 @Composable
-private fun StoryCircleItem(
+private fun StoryActionItem(
     icon: ImageVector,
+    label: String,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .size(56.dp)
-            .clip(CircleShape)
-            .background(BgPrimary)
-            .border(1.5.dp, TextMain, CircleShape)
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier.clickable { onClick() }
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = TextMain,
-            modifier = Modifier.size(24.dp)
+        Surface(
+            shape = CircleShape,
+            color = CardBg,
+            shadowElevation = 3.dp,
+            modifier = Modifier
+                .size(54.dp)
+                .border(1.2.dp, CardBorder, CircleShape)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = label,
+                    tint = TextMain,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+        }
+
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
+            color = TextSub
         )
     }
 }
