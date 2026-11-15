@@ -49,8 +49,10 @@
 ---
 
 ## 📲 ダウンロード（Obtainium 対応）
-GitHub Releases にて最新の APK（`app-debug.apk`）を配信しています。  
-[Obtainium](https://github.com/ImranR98/Obtainium) に本リポジトリの URL を登録することで、ワンタップでインストールおよび自動更新が可能です。
+- **最新バージョン**: [KaraLog v2.0.1 (APK)](https://github.com/ryota-1017/KaraLog/releases/download/v2.0.1/KaraLog-v2.0.1.apk)
+- GitHub Releases: [Releases 一覧](https://github.com/ryota-1017/KaraLog/releases)
+
+[Obtainium](https://github.com/ImranR98/Obtainium) に本リポジトリの URL (`https://github.com/ryota-1017/KaraLog`) を登録することで、ワンタップでインストールおよび自動更新が可能です。
 
 ---
 
