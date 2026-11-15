@@ -8,6 +8,12 @@ import java.net.URLEncoder
 
 object IntentHelper {
 
+    fun isSpotifyUrl(url: String): Boolean =
+        url.contains("spotify.com") || url.startsWith("spotify:")
+
+    fun isYouTubeMusicUrl(url: String): Boolean =
+        url.contains("music.youtube.com") || url.contains("youtube.com") || url.contains("youtu.be")
+
     fun openSpotify(context: Context, title: String, artist: String = "", customUrl: String = "") {
         if (customUrl.isNotEmpty()) {
             openUrl(context, customUrl)

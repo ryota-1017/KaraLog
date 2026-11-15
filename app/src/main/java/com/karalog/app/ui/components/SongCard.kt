@@ -120,6 +120,8 @@ fun SongCard(
         ListenMusicSheet(
             title = song.title,
             artist = song.artist,
+            spotifyUrl = song.spotifyUrl,
+            youtubeMusicUrl = song.youtubeMusicUrl,
             onDismiss = { showListenSheet = false }
         )
     }

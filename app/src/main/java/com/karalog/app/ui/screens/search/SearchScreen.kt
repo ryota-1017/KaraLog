@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.BookmarkBorder
@@ -14,6 +15,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -23,6 +27,8 @@ import com.karalog.app.data.local.entity.SongEntity
 import com.karalog.app.data.model.SongWithStats
 import com.karalog.app.ui.components.ListenMusicSheet
 import com.karalog.app.ui.theme.*
+import com.karalog.app.util.HapticHelper
+import com.karalog.app.util.IntentHelper
 
 @Composable
 fun SearchScreen(
@@ -34,6 +40,7 @@ fun SearchScreen(
     initialCategory: String = "ALL",
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
     var selectedMachine by remember { mutableStateOf("ALL") } // ALL, DAM, JOY
     var selectedCategory by remember { mutableStateOf(initialCategory) } // ALL, KEPT, WARMUP, BEST, CLIMAX, PRACTICE
@@ -42,12 +49,13 @@ fun SearchScreen(
     var listeningSong by remember { mutableStateOf<SongEntity?>(null) }
 
     val filteredSongs = remember(songsWithStats, searchQuery, selectedMachine, selectedCategory) {
+        val q = searchQuery.trim().lowercase()
         songsWithStats.filter { item ->
             val song = item.song
-            val matchesQuery = searchQuery.isEmpty() ||
-                    song.title.contains(searchQuery, ignoreCase = true) ||
-                    song.artist.contains(searchQuery, ignoreCase = true) ||
-                    song.requestNumber.contains(searchQuery, ignoreCase = true)
+            val matchesQuery = q.isEmpty() ||
+                    song.title.lowercase().contains(q) ||
+                    song.artist.lowercase().contains(q) ||
+                    song.requestNumber.lowercase().contains(q)
 
             val matchesMachine = when (selectedMachine) {
                 "DAM" -> song.isDamAvailable
@@ -73,58 +81,113 @@ fun SearchScreen(
             .fillMaxSize()
             .background(BgPrimary)
     ) {
-        // Search Input Bar
+        // Clear & Prominent Search Bar Section
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(BgPrimary)
-                .padding(horizontal = 16.dp, vertical = 10.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            Row(
+            // High-visibility, perfectly centered search input (48dp height)
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(40.dp)
+                    .height(48.dp)
                     .background(BgSecondary)
-                    .border(1.dp, BorderLight)
+                    .border(1.2.dp, BorderLight)
                     .padding(horizontal = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                contentAlignment = Alignment.CenterStart
             ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
-                    tint = IconInactive,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                TextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = {
-                        Text("曲名、歌手名、予約番号で検索", fontSize = 13.sp, color = TextSub)
-                    },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = BgSecondary,
-                        unfocusedContainerColor = BgSecondary,
-                        focusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                        unfocusedIndicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                        focusedTextColor = TextMain,
-                        unfocusedTextColor = TextMain
-                    ),
-                    singleLine = true,
-                    modifier = Modifier.weight(1f)
-                )
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(
-                        onClick = { searchQuery = "" },
-                        modifier = Modifier.size(24.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                        tint = TextMain,
+                        modifier = Modifier.size(20.dp)
+                    )
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.CenterStart
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "クリア",
-                            tint = IconInactive,
-                            modifier = Modifier.size(16.dp)
+                        if (searchQuery.isEmpty()) {
+                            Text(
+                                text = "曲名・歌手名、またはリンクで検索",
+                                fontSize = 14.sp,
+                                color = TextSub
+                            )
+                        }
+
+                        BasicTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            singleLine = true,
+                            textStyle = TextStyle(
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = TextMain
+                            ),
+                            cursorBrush = SolidColor(TextMain),
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
+
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(
+                            onClick = { searchQuery = "" },
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "クリア",
+                                tint = TextMain,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Quick Link Detect Bar (if user pastes Spotify or YouTube Music URL)
+            val isSpotify = IntentHelper.isSpotifyUrl(searchQuery)
+            val isYtMusic = IntentHelper.isYouTubeMusicUrl(searchQuery)
+            if (isSpotify || isYtMusic) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(BgSecondary)
+                        .border(1.dp, BorderLight)
+                        .clickable {
+                            val newSong = if (isSpotify) {
+                                SongEntity(title = "", spotifyUrl = searchQuery.trim())
+                            } else {
+                                SongEntity(title = "", youtubeMusicUrl = searchQuery.trim())
+                            }
+                            editingSong = newSong
+                            showEditDialog = true
+                        }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = if (isSpotify) "🔗 Spotifyの共有リンクを検出" else "🔗 YouTube Musicのリンクを検出",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextMain
+                    )
+                    Text(
+                        text = "このリンクで曲を統合登録 ➔",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextMain
+                    )
                 }
             }
 
@@ -132,7 +195,7 @@ fun SearchScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -144,7 +207,7 @@ fun SearchScreen(
                                 .clickable { selectedMachine = code }
                                 .background(if (isSelected) TextMain else BgSecondary)
                                 .border(1.dp, if (isSelected) TextMain else BorderLight)
-                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                                .padding(horizontal = 10.dp, vertical = 5.dp)
                         ) {
                             Text(
                                 text = label,
@@ -159,7 +222,7 @@ fun SearchScreen(
                 Text(
                     text = "+ 新規曲を追加",
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     color = TextMain,
                     modifier = Modifier.clickable {
                         editingSong = SongEntity(title = searchQuery.trim())
@@ -189,7 +252,7 @@ fun SearchScreen(
                             .clickable { selectedCategory = code }
                             .background(if (isSelected) TextMain else BgSecondary)
                             .border(1.dp, if (isSelected) TextMain else BorderLight)
-                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
                             text = label,
@@ -204,7 +267,7 @@ fun SearchScreen(
 
         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderLight))
 
-        // Search Results List
+        // Search Results List (Showing 1 song with integrated Spotify & YouTube Music)
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -267,7 +330,7 @@ fun SearchScreen(
                                     Text(
                                         text = song.title,
                                         fontSize = 15.sp,
-                                        fontWeight = FontWeight.Medium,
+                                        fontWeight = FontWeight.SemiBold,
                                         color = TextMain,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
@@ -313,21 +376,52 @@ fun SearchScreen(
                                     }
                                 }
 
+                                // Integrated Music Platforms (Spotify & YouTube Music together on 1 song)
                                 Row(
-                                    modifier = Modifier.padding(top = 2.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    modifier = Modifier.padding(top = 5.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    // Quick Spotify Button
+                                    Row(
+                                        modifier = Modifier
+                                            .background(BgSecondary)
+                                            .border(1.dp, BorderLight)
+                                            .clickable {
+                                                HapticHelper.playClick(context)
+                                                IntentHelper.openSpotify(context, song.title, song.artist, song.spotifyUrl)
+                                            }
+                                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                    ) {
+                                        Text("▶ Spotify", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
+                                    }
+
+                                    // Quick YouTube Music Button
+                                    Row(
+                                        modifier = Modifier
+                                            .background(BgSecondary)
+                                            .border(1.dp, BorderLight)
+                                            .clickable {
+                                                HapticHelper.playClick(context)
+                                                IntentHelper.openYouTubeMusic(context, song.title, song.artist, song.youtubeMusicUrl)
+                                            }
+                                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                    ) {
+                                        Text("▶ YT Music", fontSize = 10.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
+                                    }
+
                                     if (item.maxScore != null) {
                                         Text(
-                                            text = "最高: ${String.format("%.3f", item.maxScore)}点",
-                                            fontSize = 11.sp,
+                                            text = "最高 ${String.format("%.1f", item.maxScore)}点",
+                                            fontSize = 10.sp,
                                             fontFamily = FontFamily.Monospace,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = TextMain
+                                            color = TextSub,
+                                            modifier = Modifier.padding(start = 2.dp)
                                         )
-                                    }
-                                    if (item.singCount > 0) {
-                                        Text(text = "(${item.singCount}回歌唱)", fontSize = 10.sp, color = TextSub)
                                     }
                                 }
                             }
@@ -336,19 +430,6 @@ fun SearchScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(2.dp)
                             ) {
-                                // Listen Music Button (YouTube Music / Spotify / YouTube)
-                                IconButton(
-                                    onClick = { listeningSong = song },
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Headphones,
-                                        contentDescription = "原曲を聴く",
-                                        tint = TextSub,
-                                        modifier = Modifier.size(17.dp)
-                                    )
-                                }
-
                                 IconButton(
                                     onClick = { onKeepToggle(song) },
                                     modifier = Modifier.size(32.dp)
@@ -399,11 +480,13 @@ fun SearchScreen(
         ListenMusicSheet(
             title = listeningSong!!.title,
             artist = listeningSong!!.artist,
+            spotifyUrl = listeningSong!!.spotifyUrl,
+            youtubeMusicUrl = listeningSong!!.youtubeMusicUrl,
             onDismiss = { listeningSong = null }
         )
     }
 
-    // Add / Edit Song Dialog
+    // Add / Edit Song Dialog (Handles single song with Spotify & YT Music merged)
     if (showEditDialog && editingSong != null) {
         val target = editingSong!!
         var titleInput by remember { mutableStateOf(target.title) }
@@ -413,19 +496,27 @@ fun SearchScreen(
         var damInput by remember { mutableStateOf(target.isDamAvailable) }
         var joyInput by remember { mutableStateOf(target.isJoysoundAvailable) }
         var stageInput by remember { mutableStateOf(target.stageTag) }
+        var spotifyInput by remember { mutableStateOf(target.spotifyUrl) }
+        var ytMusicInput by remember { mutableStateOf(target.youtubeMusicUrl) }
 
         AlertDialog(
             onDismissRequest = { showEditDialog = false },
             title = {
                 Text(
-                    if (target.id == 0L) "曲の新規登録" else "曲情報の編集",
+                    if (target.id == 0L) "曲の新規登録 (1曲に統合)" else "曲情報の編集",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextMain
                 )
             },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "※同名・同アーティストの曲は自動的に1曲に統合されます",
+                        fontSize = 10.sp,
+                        color = TextSub
+                    )
+
                     OutlinedTextField(
                         value = titleInput,
                         onValueChange = { titleInput = it },
@@ -440,6 +531,7 @@ fun SearchScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -455,18 +547,38 @@ fun SearchScreen(
                             }
                         }
                     }
+
                     OutlinedTextField(
                         value = reqInput,
                         onValueChange = { reqInput = it },
-                        label = { Text("デンモク予約番号 (メモ)", fontSize = 11.sp) },
+                        label = { Text("デンモク予約番号", fontSize = 11.sp) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Spotify & YouTube Music Integration URLs
+                    OutlinedTextField(
+                        value = spotifyInput,
+                        onValueChange = { spotifyInput = it },
+                        label = { Text("Spotify リンク (任意)", fontSize = 10.sp) },
+                        placeholder = { Text("https://open.spotify.com/...", fontSize = 10.sp) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = ytMusicInput,
+                        onValueChange = { ytMusicInput = it },
+                        label = { Text("YouTube Music リンク (任意)", fontSize = 10.sp) },
+                        placeholder = { Text("https://music.youtube.com/...", fontSize = 10.sp) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     // Stage Tag Selector
                     Column {
-                        Text("歌唱シーンタグ:", fontSize = 11.sp, color = TextSub)
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Text("歌唱シーン:", fontSize = 10.sp, color = TextSub)
+                        Spacer(modifier = Modifier.height(3.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             listOf(
                                 "" to "未設定",
@@ -481,7 +593,7 @@ fun SearchScreen(
                                         .clickable { stageInput = code }
                                         .background(if (isSel) TextMain else BgSecondary)
                                         .border(1.dp, BorderLight)
-                                        .padding(horizontal = 6.dp, vertical = 3.dp)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(label, fontSize = 10.sp, color = if (isSel) BgPrimary else TextSub)
                                 }
@@ -494,14 +606,14 @@ fun SearchScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("配信:", fontSize = 12.sp, color = TextSub)
+                        Text("配信:", fontSize = 11.sp, color = TextSub)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(checked = damInput, onCheckedChange = { damInput = it })
-                            Text("DAM", fontSize = 12.sp)
+                            Text("DAM", fontSize = 11.sp)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(checked = joyInput, onCheckedChange = { joyInput = it })
-                            Text("JOY", fontSize = 12.sp)
+                            Text("JOY", fontSize = 11.sp)
                         }
                     }
                 }
@@ -518,7 +630,9 @@ fun SearchScreen(
                                     requestNumber = reqInput.trim(),
                                     isDamAvailable = damInput,
                                     isJoysoundAvailable = joyInput,
-                                    stageTag = stageInput
+                                    stageTag = stageInput,
+                                    spotifyUrl = spotifyInput.trim(),
+                                    youtubeMusicUrl = ytMusicInput.trim()
                                 )
                             )
                             showEditDialog = false
@@ -527,7 +641,7 @@ fun SearchScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = TextMain, contentColor = BgPrimary),
                     shape = RectangleShape
                 ) {
-                    Text("保存", fontSize = 12.sp)
+                    Text("1曲に統合して保存", fontSize = 12.sp)
                 }
             },
             dismissButton = {

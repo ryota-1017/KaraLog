@@ -5,9 +5,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Headphones
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,6 +25,8 @@ import com.karalog.app.util.IntentHelper
 fun ListenMusicSheet(
     title: String,
     artist: String = "",
+    spotifyUrl: String = "",
+    youtubeMusicUrl: String = "",
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -58,7 +60,7 @@ fun ListenMusicSheet(
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
-                            text = "原曲を聴く",
+                            text = "原曲を聴く (1曲に統合)",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = TextMain,
@@ -103,7 +105,7 @@ fun ListenMusicSheet(
                     }
                 }
 
-                // Options List (Instagram / Threads clean rows)
+                // 2つの音楽サービス（Spotify & YouTube Music）が1つの曲としてまとまっている
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -116,7 +118,7 @@ fun ListenMusicSheet(
                             .border(1.dp, BorderLight)
                             .clickable {
                                 HapticHelper.playClick(context)
-                                IntentHelper.openYouTubeMusic(context, title, artist)
+                                IntentHelper.openYouTubeMusic(context, title, artist, youtubeMusicUrl)
                                 onDismiss()
                             }
                             .padding(horizontal = 14.dp, vertical = 12.dp),
@@ -124,12 +126,21 @@ fun ListenMusicSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text(
-                                text = "YouTube Music",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = TextMain
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Text(
+                                    text = "YouTube Music",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = TextMain
+                                )
+                                if (youtubeMusicUrl.isNotEmpty()) {
+                                    Text(
+                                        text = "登録リンク済",
+                                        fontSize = 10.sp,
+                                        color = TextSub
+                                    )
+                                }
+                            }
                             Text(
                                 text = "YouTube Music アプリまたはWebで聴く",
                                 fontSize = 10.sp,
@@ -137,7 +148,7 @@ fun ListenMusicSheet(
                             )
                         }
                         Icon(
-                            Icons.Default.OpenInNew,
+                            Icons.AutoMirrored.Filled.OpenInNew,
                             contentDescription = null,
                             tint = TextSub,
                             modifier = Modifier.size(14.dp)
@@ -152,7 +163,7 @@ fun ListenMusicSheet(
                             .border(1.dp, BorderLight)
                             .clickable {
                                 HapticHelper.playClick(context)
-                                IntentHelper.openSpotify(context, title, artist)
+                                IntentHelper.openSpotify(context, title, artist, spotifyUrl)
                                 onDismiss()
                             }
                             .padding(horizontal = 14.dp, vertical = 12.dp),
@@ -160,12 +171,21 @@ fun ListenMusicSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text(
-                                text = "Spotify",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = TextMain
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Text(
+                                    text = "Spotify",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = TextMain
+                                )
+                                if (spotifyUrl.isNotEmpty()) {
+                                    Text(
+                                        text = "登録リンク済",
+                                        fontSize = 10.sp,
+                                        color = TextSub
+                                    )
+                                }
+                            }
                             Text(
                                 text = "Spotify アプリまたはWebで聴く",
                                 fontSize = 10.sp,
@@ -173,14 +193,14 @@ fun ListenMusicSheet(
                             )
                         }
                         Icon(
-                            Icons.Default.OpenInNew,
+                            Icons.AutoMirrored.Filled.OpenInNew,
                             contentDescription = null,
                             tint = TextSub,
                             modifier = Modifier.size(14.dp)
                         )
                     }
 
-                    // 3. YouTube (MV / Live)
+                    // 3. YouTube (Official MV / Live)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -203,13 +223,13 @@ fun ListenMusicSheet(
                                 color = TextMain
                             )
                             Text(
-                                text = "公式MVやライブ映像で確認する",
+                                text = "公式MVやライブ動画でメロディを確認",
                                 fontSize = 10.sp,
                                 color = TextSub
                             )
                         }
                         Icon(
-                            Icons.Default.OpenInNew,
+                            Icons.AutoMirrored.Filled.OpenInNew,
                             contentDescription = null,
                             tint = TextSub,
                             modifier = Modifier.size(14.dp)

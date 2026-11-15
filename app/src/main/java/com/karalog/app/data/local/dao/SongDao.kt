@@ -15,7 +15,7 @@ interface SongDao {
     @Query("SELECT * FROM songs WHERE id = :id LIMIT 1")
     suspend fun getSongById(id: Long): SongEntity?
 
-    @Query("SELECT * FROM songs WHERE title = :title AND artist = :artist LIMIT 1")
+    @Query("SELECT * FROM songs WHERE isTrashed = 0 AND LOWER(TRIM(title)) = LOWER(TRIM(:title)) AND LOWER(TRIM(artist)) = LOWER(TRIM(:artist)) LIMIT 1")
     suspend fun getSongByTitleAndArtist(title: String, artist: String): SongEntity?
 
     @Query("SELECT * FROM songs WHERE isTrashed = 1 ORDER BY updatedAt DESC")

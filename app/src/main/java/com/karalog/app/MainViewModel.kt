@@ -72,12 +72,19 @@ class MainViewModel(private val repository: KaraLogRepository) : ViewModel() {
         isDam: Boolean = true,
         isJoy: Boolean = true,
         stageTag: String = "",
+        spotifyUrl: String = "",
+        youtubeMusicUrl: String = "",
         onSongReady: (SongEntity) -> Unit = {}
     ) {
         viewModelScope.launch {
             val trimmedTitle = title.trim()
             val trimmedArtist = artist.trim()
-            val existing = repository.findOrCreateSong(trimmedTitle, trimmedArtist)
+            val existing = repository.findOrCreateSong(
+                title = trimmedTitle,
+                artist = trimmedArtist,
+                spotifyUrl = spotifyUrl,
+                youtubeMusicUrl = youtubeMusicUrl
+            )
             val updated = existing.copy(
                 requestNumber = if (requestNumber.isNotEmpty()) requestNumber else existing.requestNumber,
                 defaultKey = if (defaultKey != 0) defaultKey else existing.defaultKey,
@@ -93,11 +100,7 @@ class MainViewModel(private val repository: KaraLogRepository) : ViewModel() {
 
     fun saveSong(song: SongEntity) {
         viewModelScope.launch {
-            if (song.id == 0L) {
-                repository.insertSong(song)
-            } else {
-                repository.updateSong(song)
-            }
+            repository.saveOrMergeSong(song)
         }
     }
 

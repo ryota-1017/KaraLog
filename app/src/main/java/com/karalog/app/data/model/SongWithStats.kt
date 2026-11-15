@@ -22,6 +22,8 @@ data class SongWithStats(
     val defaultKey: Int get() = song.defaultKey
     val isKept: Boolean get() = song.isKept
     val stageTag: String get() = song.stageTag
+    val spotifyUrl: String get() = song.spotifyUrl
+    val youtubeMusicUrl: String get() = song.youtubeMusicUrl
     val isTrashed: Boolean get() = song.isTrashed
 }
 

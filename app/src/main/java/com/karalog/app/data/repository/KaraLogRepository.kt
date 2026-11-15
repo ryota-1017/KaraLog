@@ -62,13 +62,64 @@ class KaraLogRepository(
     suspend fun toggleKeptStatus(songId: Long, currentKept: Boolean) = songDao.updateKeptStatus(songId, !currentKept)
     suspend fun updateDefaultKey(songId: Long, key: Int) = songDao.updateDefaultKey(songId, key)
 
-    suspend fun findOrCreateSong(title: String, artist: String): SongEntity {
+    suspend fun saveOrMergeSong(song: SongEntity): SongEntity {
+        val trimmedTitle = song.title.trim()
+        val trimmedArtist = song.artist.trim()
+        val existing = songDao.getSongByTitleAndArtist(trimmedTitle, trimmedArtist)
+
+        return if (existing != null && (song.id == 0L || song.id == existing.id)) {
+            val merged = existing.copy(
+                title = trimmedTitle,
+                artist = trimmedArtist,
+                spotifyUrl = if (song.spotifyUrl.isNotEmpty()) song.spotifyUrl else existing.spotifyUrl,
+                youtubeMusicUrl = if (song.youtubeMusicUrl.isNotEmpty()) song.youtubeMusicUrl else existing.youtubeMusicUrl,
+                requestNumber = if (song.requestNumber.isNotEmpty()) song.requestNumber else existing.requestNumber,
+                defaultKey = if (song.defaultKey != 0) song.defaultKey else existing.defaultKey,
+                stageTag = if (song.stageTag.isNotEmpty()) song.stageTag else existing.stageTag,
+                isDamAvailable = song.isDamAvailable,
+                isJoysoundAvailable = song.isJoysoundAvailable,
+                updatedAt = System.currentTimeMillis()
+            )
+            songDao.updateSong(merged)
+            merged
+        } else if (song.id != 0L) {
+            songDao.updateSong(song)
+            song
+        } else {
+            val id = songDao.insertSong(song.copy(title = trimmedTitle, artist = trimmedArtist))
+            song.copy(id = id, title = trimmedTitle, artist = trimmedArtist)
+        }
+    }
+
+    suspend fun findOrCreateSong(
+        title: String,
+        artist: String,
+        spotifyUrl: String = "",
+        youtubeMusicUrl: String = ""
+    ): SongEntity {
         val trimmedTitle = title.trim()
         val trimmedArtist = artist.trim()
         val existing = songDao.getSongByTitleAndArtist(trimmedTitle, trimmedArtist)
-        if (existing != null) return existing
+        if (existing != null) {
+            if ((spotifyUrl.isNotEmpty() && existing.spotifyUrl.isEmpty()) ||
+                (youtubeMusicUrl.isNotEmpty() && existing.youtubeMusicUrl.isEmpty())) {
+                val updated = existing.copy(
+                    spotifyUrl = if (spotifyUrl.isNotEmpty()) spotifyUrl else existing.spotifyUrl,
+                    youtubeMusicUrl = if (youtubeMusicUrl.isNotEmpty()) youtubeMusicUrl else existing.youtubeMusicUrl,
+                    updatedAt = System.currentTimeMillis()
+                )
+                songDao.updateSong(updated)
+                return updated
+            }
+            return existing
+        }
 
-        val newSong = SongEntity(title = trimmedTitle, artist = trimmedArtist)
+        val newSong = SongEntity(
+            title = trimmedTitle,
+            artist = trimmedArtist,
+            spotifyUrl = spotifyUrl,
+            youtubeMusicUrl = youtubeMusicUrl
+        )
         val id = songDao.insertSong(newSong)
         return newSong.copy(id = id)
     }
@@ -94,7 +145,7 @@ class KaraLogRepository(
         val songs = songsFlow.first()
         val records = recordsFlow.first()
         val map = mapOf(
-            "version" to "1.2.2",
+            "version" to "1.5.0",
             "songs" to songs,
             "records" to records
         )

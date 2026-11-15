@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.karalog.app.data.local.entity.SongEntity
 import com.karalog.app.ui.theme.*
+import com.karalog.app.util.HapticHelper
+import com.karalog.app.util.IntentHelper
 
 @Composable
 fun NowSingingView(
@@ -96,7 +98,7 @@ fun NowSingingView(
                 )
             }
 
-            // 楽曲情報カード
+            // 楽曲情報カード (1曲として統合された情報)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -120,29 +122,48 @@ fun NowSingingView(
                     )
 
                     if (song != null) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        // Listen Music Quick Link Button
+                        Spacer(modifier = Modifier.height(10.dp))
+                        // Spotify & YouTube Music Integrated Quick Buttons on 1 Song
                         Row(
-                            modifier = Modifier
-                                .clickable { showListenSheet = true }
-                                .background(BgPrimary)
-                                .border(1.dp, BorderLight)
-                                .padding(horizontal = 10.dp, vertical = 5.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                Icons.Default.Headphones,
-                                contentDescription = null,
-                                tint = TextMain,
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Text(
-                                text = "原曲を聴く (YT Music / Spotify)",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = TextMain
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .clickable {
+                                        HapticHelper.playClick(context)
+                                        IntentHelper.openSpotify(context, song.title, song.artist, song.spotifyUrl)
+                                    }
+                                    .background(BgPrimary)
+                                    .border(1.dp, BorderLight)
+                                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text("▶ Spotify", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .clickable {
+                                        HapticHelper.playClick(context)
+                                        IntentHelper.openYouTubeMusic(context, song.title, song.artist, song.youtubeMusicUrl)
+                                    }
+                                    .background(BgPrimary)
+                                    .border(1.dp, BorderLight)
+                                    .padding(horizontal = 10.dp, vertical = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text("▶ YT Music", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
+                            }
+
+                            IconButton(
+                                onClick = { showListenSheet = true },
+                                modifier = Modifier.size(28.dp)
+                            ) {
+                                Icon(Icons.Default.Headphones, contentDescription = "詳細試聴", tint = TextSub, modifier = Modifier.size(16.dp))
+                            }
                         }
                     }
 
@@ -311,6 +332,8 @@ fun NowSingingView(
         ListenMusicSheet(
             title = song.title,
             artist = song.artist,
+            spotifyUrl = song.spotifyUrl,
+            youtubeMusicUrl = song.youtubeMusicUrl,
             onDismiss = { showListenSheet = false }
         )
     }

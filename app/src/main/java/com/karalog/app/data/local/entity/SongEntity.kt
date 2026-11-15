@@ -18,6 +18,8 @@ data class SongEntity(
     val genre: String = "",
     val stageTag: String = "", // "WARMUP", "BEST", "CLIMAX", "PRACTICE"
     val memo: String = "",
+    val spotifyUrl: String = "",       // Spotify track link
+    val youtubeMusicUrl: String = "",  // YouTube Music track link
     val isTrashed: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
