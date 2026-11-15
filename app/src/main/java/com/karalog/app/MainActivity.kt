@@ -313,6 +313,7 @@ class MainActivity : ComponentActivity() {
                             BottomNavBar(
                                 currentTab = currentTab,
                                 onTabSelected = { currentTab = it },
+                                isDark = isDark,
                                 modifier = Modifier.align(Alignment.BottomCenter)
                             )
 

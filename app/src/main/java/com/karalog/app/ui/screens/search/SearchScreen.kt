@@ -1,6 +1,7 @@
 ﻿package com.karalog.app.ui.screens.search
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -224,8 +225,8 @@ fun SearchScreen(
                         Surface(
                             shape = RoundedCornerShape(16.dp),
                             color = if (isSelected) TextMain else CardBg,
+                            border = if (isSelected) null else BorderStroke(1.dp, CardBorder),
                             shadowElevation = if (isSelected) 2.dp else 1.dp,
-                            modifier = Modifier.border(1.dp, if (isSelected) TextMain else CardBorder, RoundedCornerShape(16.dp)),
                             onClick = {
                                 HapticHelper.playClick(context)
                                 selectedMachine = code
@@ -245,8 +246,8 @@ fun SearchScreen(
                 Surface(
                     shape = RoundedCornerShape(16.dp),
                     color = BgSecondary,
+                    border = BorderStroke(1.dp, CardBorder),
                     shadowElevation = 1.dp,
-                    modifier = Modifier.border(1.dp, CardBorder, RoundedCornerShape(16.dp)),
                     onClick = {
                         HapticHelper.playClick(context)
                         editingSong = SongEntity(title = searchQuery.trim())
@@ -282,8 +283,8 @@ fun SearchScreen(
                     Surface(
                         shape = RoundedCornerShape(14.dp),
                         color = if (isSelected) TextMain else CardBg,
+                        border = if (isSelected) null else BorderStroke(1.dp, CardBorder),
                         shadowElevation = if (isSelected) 2.dp else 1.dp,
-                        modifier = Modifier.border(1.dp, if (isSelected) TextMain else CardBorder, RoundedCornerShape(14.dp)),
                         onClick = {
                             HapticHelper.playClick(context)
                             selectedCategory = code

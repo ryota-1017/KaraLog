@@ -2,6 +2,7 @@ package com.karalog.app.ui.components
 
 import android.app.Activity
 import android.view.WindowManager
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -259,12 +260,12 @@ fun NowSingingView(
                             Surface(
                                 shape = RoundedCornerShape(14.dp),
                                 color = if (isSelected) TextMain else BgSecondary,
+                                border = if (isSelected) null else BorderStroke(1.dp, CardBorder),
                                 shadowElevation = if (isSelected) 2.dp else 0.dp,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(40.dp)
-                                    .border(1.dp, if (isSelected) TextMain else CardBorder, RoundedCornerShape(14.dp))
-                                    .clickable { onMachineChange(machine) }
+                                    .height(40.dp),
+                                onClick = { onMachineChange(machine) }
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(

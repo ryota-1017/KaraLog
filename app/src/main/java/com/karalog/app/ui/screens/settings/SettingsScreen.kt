@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -92,10 +93,9 @@ fun SettingsScreen(
                             Surface(
                                 shape = RoundedCornerShape(14.dp),
                                 color = if (isSel) TextMain else BgSecondary,
+                                border = if (isSel) null else BorderStroke(1.dp, CardBorder),
                                 shadowElevation = if (isSel) 2.dp else 0.dp,
-                                modifier = Modifier
-                                    .border(1.dp, if (isSel) TextMain else CardBorder, RoundedCornerShape(14.dp))
-                                    .clickable { onThemeModeChange(mode) }
+                                onClick = { onThemeModeChange(mode) }
                             ) {
                                 Text(
                                     text = label,
@@ -142,10 +142,9 @@ fun SettingsScreen(
                                 Surface(
                                     shape = RoundedCornerShape(14.dp),
                                     color = if (isSel) TextMain else BgSecondary,
+                                    border = if (isSel) null else BorderStroke(1.dp, CardBorder),
                                     shadowElevation = if (isSel) 2.dp else 0.dp,
-                                    modifier = Modifier
-                                        .border(1.dp, if (isSel) TextMain else CardBorder, RoundedCornerShape(14.dp))
-                                        .clickable { onDefaultMachineChange(m) }
+                                    onClick = { onDefaultMachineChange(m) }
                                 ) {
                                     Text(
                                         text = m,

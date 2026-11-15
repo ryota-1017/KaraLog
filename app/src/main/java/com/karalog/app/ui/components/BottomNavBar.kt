@@ -34,10 +34,9 @@ enum class BottomTab {
 fun BottomNavBar(
     currentTab: BottomTab,
     onTabSelected: (BottomTab) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDark: Boolean = isSystemInDarkTheme()
 ) {
-    val isDark = isSystemInDarkTheme()
-
     val tabs = listOf(
         Triple(BottomTab.HOME, Icons.Filled.Home, Icons.Outlined.Home),
         Triple(BottomTab.SEARCH, Icons.Filled.Search, Icons.Outlined.Search),

@@ -1,5 +1,6 @@
 ﻿package com.karalog.app.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -153,9 +154,8 @@ fun SongCard(
                 Surface(
                     shape = CircleShape,
                     color = if (song.isKept) TextMain else BgSecondary,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .border(1.dp, if (song.isKept) TextMain else CardBorder, CircleShape),
+                    border = if (song.isKept) null else BorderStroke(1.dp, CardBorder),
+                    modifier = Modifier.size(32.dp),
                     onClick = onKeepToggle
                 ) {
                     Box(contentAlignment = Alignment.Center) {
@@ -173,9 +173,8 @@ fun SongCard(
                     Surface(
                         shape = CircleShape,
                         color = BgSecondary,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .border(1.dp, CardBorder, CircleShape),
+                        border = BorderStroke(1.dp, CardBorder),
+                        modifier = Modifier.size(32.dp),
                         onClick = { showDeleteDialog = true }
                     ) {
                         Box(contentAlignment = Alignment.Center) {

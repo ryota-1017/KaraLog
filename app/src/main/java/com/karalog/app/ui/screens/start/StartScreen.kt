@@ -1,5 +1,6 @@
 package com.karalog.app.ui.screens.start
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -146,19 +147,16 @@ fun StartScreen(
                     Surface(
                         shape = RoundedCornerShape(20.dp),
                         color = if (isSelected) SurfaceElevated else CardBg,
-                        shadowElevation = if (isSelected) 5.dp else 2.dp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(
-                                width = if (isSelected) 2.dp else 1.dp,
-                                color = if (isSelected) TextMain else CardBorder,
-                                shape = RoundedCornerShape(20.dp)
-                            )
-                            .clip(RoundedCornerShape(20.dp))
-                            .clickable {
-                                HapticHelper.playClick(context)
-                                selectedMachine = machineName
-                            }
+                        border = BorderStroke(
+                            width = if (isSelected) 1.5.dp else 1.dp,
+                            color = if (isSelected) TextMain else CardBorder
+                        ),
+                        shadowElevation = if (isSelected) 4.dp else 1.dp,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            HapticHelper.playClick(context)
+                            selectedMachine = machineName
+                        }
                     ) {
                         Row(
                             modifier = Modifier
@@ -173,7 +171,7 @@ fun StartScreen(
                                     Surface(
                                         shape = RoundedCornerShape(8.dp),
                                         color = if (isSelected) TextMain else BgSecondary,
-                                        modifier = Modifier.border(0.8.dp, CardBorder, RoundedCornerShape(8.dp))
+                                        border = if (isSelected) null else BorderStroke(0.8.dp, CardBorder)
                                     ) {
                                         Text(
                                             text = if (isDam) "DAM" else "JOY",
