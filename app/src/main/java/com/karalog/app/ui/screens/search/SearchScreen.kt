@@ -517,7 +517,8 @@ fun SearchScreen(
                                 Surface(
                                     shape = CircleShape,
                                     color = BgSecondary,
-                                    modifier = Modifier.size(32.dp).border(1.dp, CardBorder, CircleShape),
+                                    border = BorderStroke(1.dp, CardBorder),
+                                    modifier = Modifier.size(32.dp),
                                     onClick = {
                                         HapticHelper.playClick(context)
                                         onAddToQueue(song)
@@ -533,7 +534,8 @@ fun SearchScreen(
                                 Surface(
                                     shape = CircleShape,
                                     color = if (song.isKept) TextMain else BgSecondary,
-                                    modifier = Modifier.size(32.dp).border(1.dp, if (song.isKept) TextMain else CardBorder, CircleShape),
+                                    border = if (song.isKept) null else BorderStroke(1.dp, CardBorder),
+                                    modifier = Modifier.size(32.dp),
                                     onClick = {
                                         HapticHelper.playClick(context)
                                         onKeepToggle(song)
@@ -553,7 +555,8 @@ fun SearchScreen(
                                 Surface(
                                     shape = CircleShape,
                                     color = BgSecondary,
-                                    modifier = Modifier.size(32.dp).border(1.dp, CardBorder, CircleShape),
+                                    border = BorderStroke(1.dp, CardBorder),
+                                    modifier = Modifier.size(32.dp),
                                     onClick = {
                                         HapticHelper.playClick(context)
                                         editingSong = song

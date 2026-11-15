@@ -5,48 +5,58 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Mic Capsule -->
+    <!-- Ambient Orbital Ring -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="2.8"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M48,34 C48,30.7 50.7,28 54,28 C57.3,28 60,30.7 60,34 L60,47 C60,50.3 57.3,53 54,53 C50.7,53 48,50.3 48,47 Z" />
+        android:strokeWidth="1.2"
+        android:pathData="M54,26 A28,28 0 1,0 54,82 A28,28 0 1,0 54,26 Z" />
 
-    <!-- Mic Cradle -->
+    <!-- Waveform Bar 1 (Left Outer) -->
     <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="2.8"
-        android:strokeLineCap="round"
-        android:pathData="M43,45 C43,52 48,58 54,58 C60,58 65,52 65,45" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,48 L34,60 C34,61.1 34.9,62 36,62 C37.1,62 38,61.1 38,60 L38,48 C38,46.9 37.1,46 36,46 C34.9,46 34,46.9 34,48 Z" />
 
-    <!-- Stem & Base -->
+    <!-- Waveform Bar 2 (Left Inner) -->
     <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="2.8"
-        android:strokeLineCap="round"
-        android:pathData="M54,58 L54,69" />
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="2.8"
-        android:strokeLineCap="round"
-        android:pathData="M46,69 L62,69" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M41,42 L41,66 C41,67.1 41.9,68 43,68 C44.1,68 45,67.1 45,66 L45,42 C45,40.9 44.1,40 43,40 C41.9,40 41,40.9 41,42 Z" />
 
-    <!-- Wave Bars -->
+    <!-- Center Studio Microphone Capsule -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M49,34 C49,31.2 51.2,29 54,29 C56.8,29 59,31.2 59,34 L59,49 C59,51.8 56.8,54 54,54 C51.2,54 49,51.8 49,49 Z" />
+
+    <!-- Precision Suspension Cradle (U-Shape) -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="2.2"
+        android:strokeWidth="2.6"
         android:strokeLineCap="round"
-        android:pathData="M35,43 L35,51" />
+        android:pathData="M45,46 C45,52.2 49,57 54,57 C59,57 63,52.2 63,46" />
+
+    <!-- Studio Stem & Solid Base -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="2.2"
+        android:strokeWidth="2.6"
         android:strokeLineCap="round"
-        android:pathData="M73,43 L73,51" />
+        android:pathData="M54,57 L54,68" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.8"
+        android:strokeLineCap="round"
+        android:pathData="M47,68 L61,68" />
+
+    <!-- Waveform Bar 3 (Right Inner) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M63,42 L63,66 C63,67.1 63.9,68 65,68 C66.1,68 67,67.1 67,66 L67,42 C67,40.9 66.1,40 65,40 C63.9,40 63,40.9 63,42 Z" />
+
+    <!-- Waveform Bar 4 (Right Outer) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M70,48 L70,60 C70,61.1 70.9,62 72,62 C73.1,62 74,61.1 74,60 L74,48 C74,46.9 73.1,46 72,46 C70.9,46 70,46.9 70,48 Z" />
+
 </vector>

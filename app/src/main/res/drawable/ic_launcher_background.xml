@@ -4,7 +4,21 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    
+    <!-- Base Deep Premium Black -->
     <path
-        android:fillColor="#171717"
+        android:fillColor="#0C0E12"
         android:pathData="M0,0h108v108h-108z"/>
+
+    <!-- Soft Inner Ambient Glow Circle -->
+    <path
+        android:fillColor="#151820"
+        android:pathData="M54,22 A32,32 0 1,0 54,86 A32,32 0 1,0 54,22 Z"/>
+
+    <!-- Subtle Radial Micro Ring -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#1C212B"
+        android:strokeWidth="1.2"
+        android:pathData="M54,20 A34,34 0 1,0 54,88 A34,34 0 1,0 54,20 Z"/>
 </vector>

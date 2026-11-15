@@ -137,7 +137,7 @@ class MainActivity : ComponentActivity() {
                                         currentTab = BottomTab.SING
                                     },
                                     onKeepToggle = { song ->
-                                        viewModel.toggleKept(song.id, !song.isKept)
+                                        viewModel.toggleKept(song.id, song.isKept)
                                     },
                                     onSingClick = { song ->
                                         activeSingingSong = song
@@ -174,7 +174,7 @@ class MainActivity : ComponentActivity() {
                                         currentTab = BottomTab.SING
                                     },
                                     onKeepToggle = { song ->
-                                        viewModel.toggleKept(song.id, !song.isKept)
+                                        viewModel.toggleKept(song.id, song.isKept)
                                     },
                                     onSingClick = { song ->
                                         activeSingingSong = song
